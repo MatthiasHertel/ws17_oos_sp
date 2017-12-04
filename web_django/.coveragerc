@@ -1,0 +1,5 @@
+[run]
+include = django_playground/*
+omit = *migrations*, *tests*
+plugins =
+    django_coverage_plugin
