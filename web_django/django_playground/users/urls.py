@@ -26,6 +26,6 @@ urlpatterns = [
     url(
         regex=r'^~moves/register$',
         view=views.UserMovesRegisterView.as_view(),
-        name='update'
+        name='moves_register'
     ),
 ]
