@@ -30,6 +30,8 @@ services:
       - postgres_backup_local:/backups
     environment:
       - POSTGRES_USER=django_playground
+    ports:
+      - "5432:5432"
 
   mailhog:
     image: mailhog/mailhog:v1.0.0

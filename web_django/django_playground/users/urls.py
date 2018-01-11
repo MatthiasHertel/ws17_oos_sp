@@ -23,4 +23,9 @@ urlpatterns = [
         view=views.UserUpdateView.as_view(),
         name='update'
     ),
+    url(
+        regex=r'^~moves/register$',
+        view=views.UserMovesRegisterView.as_view(),
+        name='update'
+    ),
 ]
