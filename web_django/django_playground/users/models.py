@@ -13,6 +13,7 @@ class User(AbstractUser):
     name = models.CharField(_('Name of User'), blank=True, max_length=255)
 
     moves_access_token = models.CharField(_('Moves API Access Token of User'), blank=True, max_length=255)
+    moves_refresh_token = models.CharField(_('Moves API Refresh Token of User'), blank=True, max_length=255)
 
     def __str__(self):
         return self.username

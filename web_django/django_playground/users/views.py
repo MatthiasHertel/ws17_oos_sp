@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
 from django.views import View
@@ -8,9 +7,8 @@ from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-import requests
-
 from .models import User
+from ..services import moves_service
 
 
 class UserDetailView(LoginRequiredMixin, DetailView):
@@ -18,6 +16,16 @@ class UserDetailView(LoginRequiredMixin, DetailView):
     # These next two lines tell the view to index lookups by username
     slug_field = 'username'
     slug_url_kwarg = 'username'
+
+    def get_context_data(self, **kwargs):
+        context = super(UserDetailView, self).get_context_data(**kwargs)
+        context['moves_auth_url'] = moves_service.get_auth_url()
+
+        # test to refresh the access token
+        # user = User.objects.get(username=self.request.user.username)
+        # moves_service.authenticate_user(user)
+
+        return context
 
 
 class UserRedirectView(LoginRequiredMixin, RedirectView):
@@ -46,20 +54,14 @@ class UserUpdateView(LoginRequiredMixin, UpdateView):
 
 
 class UserMovesRegisterView(LoginRequiredMixin, SingleObjectMixin, View):
-
     def get(self, request, *args, **kwargs):
-
         user = User.objects.get(username=request.user.username)
         if 'code' in request.GET:
-            access_token_url = '{}/access_token?grant_type=authorization_code&code={}&client_id={}&client_secret={}'.format(settings.MOVES['api_auth'], request.GET.get('code'), settings.MOVES['client_id'], settings.MOVES['client_secret'])
-            r = requests.post(access_token_url)
-            json_r = r.json()
-            if 'error' not in json_r:
-                user.moves_access_token = json_r['access_token']
-                user.save()
+            try:
+                moves_service.create_auth(request.GET.get('code'), user)
                 return redirect('users:detail', username=request.user.username)
-            else:
-                return JsonResponse(json_r, 400)
+            except Exception as e:
+                return JsonResponse(e, 400)
         elif 'error' in request.GET:
             return HttpResponse(request.GET, 400)
         else:

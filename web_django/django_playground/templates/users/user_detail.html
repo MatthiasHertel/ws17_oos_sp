@@ -23,7 +23,7 @@
   <div class="col-sm-12">
     <a class="btn btn-primary" href="{% url 'users:update' %}" role="button">My Info</a>
     <a class="btn btn-primary" href="{% url 'account_email' %}" role="button">E-Mail</a>
-    <a class="btn btn-primary" href="https://api.moves-app.com/oauth/v1/authorize?response_type=code&client_id=1LNW6VS672jF887n2TBOW1F99uba15Qr&scope=activity location" role="button">Connect Moves</a>
+    <a class="btn btn-primary" href="{{ moves_auth_url }}" role="button">Connect Moves</a>
 
     <!-- TODO that should also come from db the client id-->
     <!-- hardcode from arne -->
