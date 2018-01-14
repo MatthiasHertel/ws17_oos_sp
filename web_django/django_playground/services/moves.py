@@ -36,7 +36,7 @@ class MovesService:
         return self.get_data('activities', user, pastDays=daysPast)
 
     def get_summary_past_days(self, user, daysPast):
-        return self.get_data('summaries', user, pastDays=daysPast)
+        return self.get_data('summary', user, pastDays=daysPast)
 
     def get_storyline_past_days(self, user, daysPast):
         return self.get_data(data_type='storyline', user=user, pastDays=daysPast, trackPoints='true')
