@@ -274,10 +274,11 @@ ADMIN_URL = r'^admin/'
 # Your common stuff: Below this line define 3rd party library settings
 # ------------------------------------------------------------------------------
 
+
 # MOVES specific configuration
 MOVES = {
-    'client_id': 'nXLqaAKvk5nnptyNEFr2A686JslcdGm8',
-    'client_secret': 'K2MIRzvO2T6Uy8o7o6qG4NwHTvZiD2QWorT6_7iYU41BVk4HzwDG7jn6h6fGX0z3',
-    'api_auth': 'https://api.moves-app.com/oauth/v1',
-    'api': 'https://api.moves-app.com/api/1.1'
+    'client_id': env('CLIENT_ID') ,
+    'client_secret': env('CLIENT_SECRET') ,
+    'api_auth': env('API_AUTH'),
+    'api': env('API')
 }
