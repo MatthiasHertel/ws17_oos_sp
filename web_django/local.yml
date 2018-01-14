@@ -50,7 +50,7 @@ services:
     links:
       - django
     command:
-      --subdomain djangoplaygroundlocalmatthias --local-host django --port 8000
+      --subdomain ${subdomain} --local-host django --port 8000
   mailhog:
     image: mailhog/mailhog:v1.0.0
     ports:

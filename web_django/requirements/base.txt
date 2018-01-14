@@ -48,3 +48,4 @@ redis>=2.10.5
 # Your custom requirements go here
 requests==2.18.4
 jsonfield==2.0.2
+matplotlib==2.1.1

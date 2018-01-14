@@ -7,6 +7,7 @@ from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 import json
+import matplotlib.pyplot as plt
 
 from .models import User
 from .models import MovesProfile
@@ -38,13 +39,21 @@ class UserDetailView(LoginRequiredMixin, DetailView):
         context['moves_connected'] = user_is_authenticated
         context['moves_auth_url'] = moves_service.get_auth_url()
 
+        days = []
         if user_is_authenticated:
             moves_service.validate_authentication(user)
-            context['data'] = moves_service.get_storyline_past_days(user, 2)
+            context['data'] = moves_service.get_summary_past_days(user, 30)
+            for day in context['data']:
+                daily_sum = 0
+                if day['summary']:
+                    for activity in day['summary']:
+                        if activity['activity'] == 'cycling':
+                            daily_sum += activity['distance']
+                days.append(daily_sum)
 
-        # test to refresh the access token
-        # user = User.objects.get(username=self.request.user.username)
-        # moves_service.authenticate_user(user)
+
+        # fig = plt.plot(days)
+        # plt.ylabel('some numbers')
 
         return context
 
