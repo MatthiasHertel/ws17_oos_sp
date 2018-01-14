@@ -261,7 +261,7 @@ def make_date_from(yyyymmdd):
 
 def make_summaries(day):
     returned = {}
-    lookup = {'walking': 'walking', 'run': 'ran', 'cyc': 'cycled', 'transport': 'Transport'}
+    lookup = {'walking': 'walking', 'run': 'ran', 'cycling': 'cycled', 'transport': 'Transport'}
 
     if not day['summary']:
         return {'walking': 'No activity'}
@@ -315,8 +315,8 @@ def geojson_place(segment):
 
 def geojson_move(segment):
     features = []
-    lookup = {'walking': 'Walking', 'transport': 'Transport', 'run': 'Running', 'cyc': 'Cycling'}
-    stroke = {'walking': '#00d45a', 'transport': '#000000', 'run': '#93139a', 'cyc': '#00ceef'}
+    lookup = {'walking': 'Walking', 'transport': 'Transport', 'run': 'Running', 'cycling': 'Cycling'}
+    stroke = {'walking': '#00d45a', 'transport': '#000000', 'run': '#93139a', 'cycling': '#00ceef'}
     print ("\n\n\n\n\n\n\n\n\n\n\{}".format(segment))
     for activity in segment['activities']:
         trackpoints = activity['trackPoints']
