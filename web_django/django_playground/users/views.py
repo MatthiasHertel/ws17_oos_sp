@@ -29,7 +29,7 @@ class UserDetailView(LoginRequiredMixin, DetailView):
 
         if user_is_authenticated:
             moves_service.validate_authentication(user)
-            # context['data'] = moves_service.get_summary_past_days(user, 31)
+            context['data'] = moves_service.get_storyline_past_days(user, 2)
 
         # test to refresh the access token
         # user = User.objects.get(username=self.request.user.username)

@@ -1,8 +1,12 @@
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+import logging
 import requests
 
 from ..users.models import MovesProfile
+
+# Get an instance of a logger
+logger = logging.getLogger(__name__)
 
 
 class MovesService:
@@ -18,27 +22,24 @@ class MovesService:
             user.moves_profile.save()
             return False
 
-    def get_activities(self, user, **kwargs):
+    def get_data(self, data_type, user, **kwargs):
         filters = ''
         for param in kwargs:
             filters += '{}={}&'.format(param, kwargs[param])
-        url = '{}/user/activities/daily?{}'.format(self.config['api'], filters)
+        url = '{}/user/{}/daily?{}'.format(self.config['api'], data_type, filters)
         r = requests.get(url, headers=self.get_headers(user))
+        print('MOVES API Request: {}'.format(url))
+        print('MOVES API Response: {}'.format(r.text))
         return r.json()
 
     def get_activities_past_days(self, user, daysPast):
-        return self.get_activities(user, pastDays=daysPast)
-
-    def get_summary(self, user, **kwargs):
-        filters = ''
-        for param in kwargs:
-            filters += '{}={}&'.format(param, kwargs[param])
-        url = '{}/user/summary/daily?{}'.format(self.config['api'], filters)
-        r = requests.get(url, headers=self.get_headers(user))
-        return r.json()
+        return self.get_data('activities', user, pastDays=daysPast)
 
     def get_summary_past_days(self, user, daysPast):
-        return self.get_summary(user, pastDays=daysPast)
+        return self.get_data('summaries', user, pastDays=daysPast)
+
+    def get_storyline_past_days(self, user, daysPast):
+        return self.get_data(data_type='storyline', user=user, pastDays=daysPast, trackPoints='true')
 
     def get_profile(self, user):
         url = '{}/user/profile'.format(self.config['api'])
