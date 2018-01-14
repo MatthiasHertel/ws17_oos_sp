@@ -13,6 +13,9 @@
       {% if object.name %}
         <p>{{ object.name }}</p>
       {% endif %}
+        {% if  moves_connected %}
+            Moves App is successfully connected
+        {%  endif %}
     </div>
   </div>
 
@@ -23,7 +26,9 @@
   <div class="col-sm-12">
     <a class="btn btn-primary" href="{% url 'users:update' %}" role="button">My Info</a>
     <a class="btn btn-primary" href="{% url 'account_email' %}" role="button">E-Mail</a>
-    <a class="btn btn-primary" href="{{ moves_auth_url }}" role="button">Connect Moves</a>
+      {% if not moves_connected %}
+        <a class="btn btn-primary" href="{{ moves_auth_url }}" role="button">Connect Moves</a>
+      {% endif %}
 
     <!-- TODO that should also come from db the client id-->
     <!-- hardcode from arne -->
