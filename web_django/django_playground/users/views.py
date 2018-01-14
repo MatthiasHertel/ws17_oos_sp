@@ -4,10 +4,12 @@ from django.views import View
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import DetailView, ListView, RedirectView, UpdateView
 from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
-
 from django.contrib.auth.mixins import LoginRequiredMixin
 
+import json
+
 from .models import User
+from .models import MovesProfile
 from ..services import moves_service
 
 from datetime import date, datetime, timedelta
@@ -29,8 +31,16 @@ class UserDetailView(LoginRequiredMixin, DetailView):
     slug_url_kwarg = 'username'
 
     def get_context_data(self, **kwargs):
+        user = User.objects.get(username=self.request.user.username)
+        user_is_authenticated = moves_service.is_user_authenticated(user)
+
         context = super(UserDetailView, self).get_context_data(**kwargs)
+        context['moves_connected'] = user_is_authenticated
         context['moves_auth_url'] = moves_service.get_auth_url()
+
+        if user_is_authenticated:
+            moves_service.validate_authentication(user)
+            context['data'] = moves_service.get_storyline_past_days(user, 2)
 
         # test to refresh the access token
         # user = User.objects.get(username=self.request.user.username)
@@ -97,10 +107,10 @@ def list(request):
 
     user = User.objects.get(username=request.user.username)
 
-    profile = get_profile(user.moves_access_token)
+    profile = get_profile(user.moves_profile.moves_access_token)
 
     # summary = Moves.user_summary_daily(pastDays=30, access_token=session['token'])
-    summary = get_user_summary_daily(30, user.moves_access_token)
+    summary = get_user_summary_daily(30, user.moves_profile.moves_access_token)
     summary.reverse()
     #
     for day in summary:
@@ -131,7 +141,7 @@ def geojson(request, date):
     validate_date(api_date)
 
     user = User.objects.get(username=request.user.username)
-    info = get_storyline(user.moves_access_token, api_date)
+    info = get_storyline(user.moves_profile.moves_access_token, api_date)
 
     features = []
     #
