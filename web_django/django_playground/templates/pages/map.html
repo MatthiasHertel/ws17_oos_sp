@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block head %}
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' />
+
+    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <script src='//api.tiles.mapbox.com/mapbox.js/v1.6.0/mapbox.js'></script>
+    <!-- https://github.com/mlevans/leaflet-hash -->
+    <script src='/static/leaflet-hash.js'></script>
+
+    <link href='//api.tiles.mapbox.com/mapbox.js/v1.6.0/mapbox.css' rel='stylesheet' />
+
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link href="/users/geojson/{{ date }}" rel="geojson" type="application/json">
+{% endblock %}
+
+{% block style %}
+
+    /*#map { position:absolute; top:60; bottom:0; width:100%; height:100%;}*/
+    #map {
+    height: 600px;
+}
+
+
+
+{% endblock %}
+
+{% block content %}
+<h1>
+  map view for date: {{date}}
+</h1>
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <div id='map'></div>
+    </div>
+  </div>
+</div>
+<script>
+    var map = L.mapbox.map('map', 'paulmison.gofl3m15')
+               .setView([0, 0], 2);
+    var hash = new L.Hash(map);
+    map.zoomControl.setPosition('topright');
+    var draw_geojson = function(data) {
+        console.log("in draw_geojson");
+        var markerLayer = L.mapbox.markerLayer()
+        markerLayer.on('layeradd', function(e) {
+            var marker = e.layer,
+                feature = marker.feature;
+            if (feature.properties.icon) {
+                marker.setIcon(L.icon(feature.properties.icon));
+            }
+        });
+        markerLayer.setGeoJSON(data).addTo(map);
+        // TODO this needs a flag for if it's a new or additional JSON
+        // (calculate bounds of all markerLayers?)
+        map.fitBounds(markerLayer.getBounds());
+    };
+    $.getJSON($('link[rel="geojson"]').attr("href"), draw_geojson);
+    // this works to add on further traces
+    // for (var i = 0; i < 25; i++) {
+    //     geojson = '/geojson/2014-01-'+i
+    //     $.getJSON(geojson, draw_geojson);
+    // }
+</script>
+
+
+{% endblock content %}
