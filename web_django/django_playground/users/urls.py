@@ -1,4 +1,5 @@
 from django.conf.urls import url
+# from django.urls import path
 
 from . import views
 
@@ -28,4 +29,9 @@ urlpatterns = [
         view=views.UserMovesRegisterView.as_view(),
         name='moves_register'
     ),
+    url('list', views.list, name='list'),
+    url(regex=r'^map/(?P<date>\d{4}-\d{2}-\d{2})/$', view=views.map, name='map'),
+    url(regex=r'^geojson/(?P<date>\d{4}-\d{2}-\d{2})/$', view=views.geojson, name='geojson'),
+
+
 ]

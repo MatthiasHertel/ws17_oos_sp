@@ -12,6 +12,7 @@ services:
     depends_on:
       - postgres
       - mailhog
+    env_file: .local_env
     volumes:
       - .:/app
     environment:
@@ -20,6 +21,7 @@ services:
     ports:
       - "8000:8000"
     command: /start.sh
+    restart: unless-stopped
 
   postgres:
     build:
@@ -40,10 +42,15 @@ services:
        - ./pgadmin_data:/root/.pgadmin
     ports:
       - "5050:5050"
-#    networks:
-#      - postgres
+   # networks:
+   #   - postgres
     restart: unless-stopped
-
+  localtunnel:
+    image: efrecon/localtunnel
+    links:
+      - django
+    command:
+      --subdomain ${subdomain} --local-host django --port 8000
   mailhog:
     image: mailhog/mailhog:v1.0.0
     ports:

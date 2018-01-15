@@ -28,7 +28,9 @@
     <a class="btn btn-primary" href="{% url 'account_email' %}" role="button">E-Mail</a>
       {% if not moves_connected %}
         <a class="btn btn-primary" href="{{ moves_auth_url }}" role="button">Connect Moves</a>
+
       {% endif %}
+      <a class="btn btn-primary" href="{% url 'users:list' %}" role="button">Moves Data</a>
 
     <!-- TODO that should also come from db the client id-->
     <!-- hardcode from arne -->

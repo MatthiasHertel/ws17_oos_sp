@@ -1,0 +1,5 @@
+# MOVES (local)
+CLIENT_ID=
+CLIENT_SECRET=
+API_AUTH=https://api.moves-app.com/oauth/v1
+API=https://api.moves-app.com/api/1.1

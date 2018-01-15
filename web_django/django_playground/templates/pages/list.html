@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>username: {{user.username}}</h1>
+<h2>access_token: {{user.moves_access_token}}</h2>
+<hr>
+<h1>list data</h1>
+
+<!-- <h2>profile data</h2>
+<pre>
+  {{ profile}}
+</pre> -->
+
+<p>Hi. You've been using Moves for {{ days }} days. (Click on a date to see a map.)</p>
+
+<h2>last 30 days</h2>
+<table>{% for day in summary %}
+  <tr>
+  <td>
+
+      <a href="map/{{day.dateObj|date:"Y-m-d"}}">{{ day.dateObj }}</a>
+  </td>
+
+    <td class="summary">
+      {{day.summary.walking}}
+    </td>
+
+    <td><a href="geojson/{{ day.dateObj|date:'Y-m-d' }}" title="">GeoJSON</a></li></td>
+  </tr>
+
+
+
+
+    {% endfor %}</table>
+
+<hr>
+    <p>{% for month in months %}
+            <a href="/list/{{ month }}">{{ month|date:"M Y" }}</a><br>
+        {% endfor %}
+    </p>
+
+
+{% endblock content %}
