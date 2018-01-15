@@ -32,13 +32,13 @@ class UserDetailView(LoginRequiredMixin, DetailView):
         if user_is_authenticated:
             moves_service.validate_authentication(user)
             context['data'] = moves_service.get_summary_past_days(user, 30)
-            for day in context['data']:
-                daily_sum = 0
-                if day['summary']:
-                    for activity in day['summary']:
-                        if activity['activity'] == 'cycling':
-                            daily_sum += activity['distance']
-                days.append(daily_sum)
+            # for day in context['data']:
+            #     daily_sum = 0
+            #     if day['summary']:
+            #         for activity in day['summary']:
+            #             if activity['activity'] == 'cycling':
+            #                 daily_sum += activity['distance']
+            #     days.append(daily_sum)
 
 
         # fig = plt.plot(days)
