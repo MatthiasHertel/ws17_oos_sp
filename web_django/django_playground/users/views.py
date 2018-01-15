@@ -20,10 +20,8 @@ from dateutil.relativedelta import relativedelta
 import logging
 logger = logging.getLogger(__name__)
 import requests
-import environ
 import json
 
-env = environ.Env()
 
 class UserDetailView(LoginRequiredMixin, DetailView):
     model = User
@@ -116,28 +114,19 @@ def list(request):
 
     user = User.objects.get(username=request.user.username)
 
-    profile = get_profile(user.moves_profile.moves_access_token)
-
-    # summary = Moves.user_summary_daily(pastDays=30, access_token=session['token'])
-    summary = get_user_summary_daily(30, user.moves_profile.moves_access_token)
+    summary = moves_service.get_summary_past_days(user, 30)
     summary.reverse()
-    #
+
     for day in summary:
         day['dateObj'] = make_date_from(day['date'])
         day['summary'] = make_summaries(day)
 
-
-    #
-    using_for = get_days_using(profile['profile']['firstDate'])
-    months = get_month_range(profile['profile']['firstDate'])
-
-
-
-
+    using_for = get_days_using(user.moves_profile.data['profile']['firstDate'])
+    months = get_month_range(user.moves_profile.data['profile']['firstDate'])
 
     return render(request, 'pages/list.html', {
             'user': user,
-            'profile': json.dumps(profile, indent=2),
+            'profile': json.dumps(user.moves_profile.data, indent=2),
             'summary': summary,
             'days': using_for,
             'months': months
@@ -146,14 +135,12 @@ def list(request):
 
 def geojson(request, date):
     api_date = date.replace('-', '')
-    print(api_date)
     validate_date(api_date)
 
     user = User.objects.get(username=request.user.username)
-    info = get_storyline(user.moves_profile.moves_access_token, api_date)
+    info = moves_service.get_storyline_date(user, api_date)
 
     features = []
-    #
     for segment in info[0]['segments']:
         if segment['type'] == 'place':
             features.append(geojson_place(segment))
@@ -161,38 +148,10 @@ def geojson(request, date):
             features.extend(geojson_move(segment))
 
     geojson = {'type': 'FeatureCollection', 'features': features}
-    #
     filename = "moves-%s.geojson" % date
-    headers = (('Content-Disposition', 'attachment; filename="%s"' % filename),)
-    #
-    # return HttpResponse(json.dumps(geojson), headers=headers, content_type='application/geo+json')
+    # headers = (('Content-Disposition', 'attachment; filename="%s"' % filename),)
     return HttpResponse(json.dumps(geojson),  content_type='application/geo+json')
-    # return render(request, 'pages/map.html', {
-    #
-    #     })
-    # return HttpResponse('ok', 200)
 
-# Utilities
-
-def get_storyline(access_token, date):
-    profile = get_profile(access_token)
-    print(profile)
-    key = ":".join((str(profile['userId']), str(date)))
-
-    # storyline = mc.get(key)
-    # if not storyline:
-    #     storyline = Moves.user_storyline_daily(date, trackPoints={'true'}, access_token=access_token)
-    #     # only cache if it's earlier than today, since today is changing
-    #     # TODO figure out utcnow implications / use profile offset
-    #     if date < datetime.now().strftime("%Y%m%d"):
-    #         mc.set(key, storyline, time=86400)
-
-    url = '{}/user/storyline/daily/{}?trackPoints=true'.format(env('API'), date)  # hardcoded test
-    storyline = requests.get(url, headers = {'Authorization':  'Bearer {}' .format(access_token)})
-
-    # storyline = Moves.user_storyline_daily(date, trackPoints={'true'}, access_token=access_token)
-
-    return storyline.json()
 
 def validate_date(date):
     date = date.replace('-', '')
@@ -200,6 +159,7 @@ def validate_date(date):
         date_obj = make_date_from(date)
     except Exception as e:
         raise Exception("Date is not in the valid format: %s" % e)
+
 
 def get_month_range(first_date, last_date=None, excluding=None):
     months = []
@@ -244,18 +204,6 @@ def get_days_using(first_date):
     delta = now-first
     return delta.days
 
-def get_profile(access_token):
-    # profile = mc.get(str(access_token))
-    # if not profile:
-        # mc.set(str(access_token), profile, time=86400)
-    url = '{}/user/profile'.format(env('API'))  # hardcoded test
-    profile = requests.get(url, headers = {'Authorization':  'Bearer {}' .format(access_token)})
-    return profile.json()
-
-def get_user_summary_daily(pastDays, access_token):
-    url = '{}/user/summary/daily?pastDays={}'.format(env('API'), pastDays)  # hardcoded test
-    summary = requests.get(url, headers = {'Authorization':  'Bearer {}' .format(access_token)})
-    return summary.json()
 
 def make_date_from(yyyymmdd):
     yyyymmdd = yyyymmdd.replace('-', '')
@@ -267,6 +215,7 @@ def make_date_from(yyyymmdd):
     # logger.info("%s %s %s" % (year, month, day))
     re = date(year, month, day)
     return re
+
 
 def make_summaries(day):
     returned = {}
@@ -280,10 +229,10 @@ def make_summaries(day):
 
     return returned
 
+
 def make_summary(object, lookup):
     return "%s for %.1f km, taking %i minutes" % (lookup[object['activity']],
             float(object['distance'])/1000, float(object['duration'])/60)
-
 
 
 def geojson_place(segment):
@@ -321,6 +270,7 @@ def geojson_place(segment):
     }
 
     return feature
+
 
 def geojson_move(segment):
     features = []

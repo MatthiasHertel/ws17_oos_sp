@@ -277,8 +277,8 @@ ADMIN_URL = r'^admin/'
 
 # MOVES specific configuration
 MOVES = {
-    'client_id': env('CLIENT_ID') ,
-    'client_secret': env('CLIENT_SECRET') ,
+    'client_id': env('CLIENT_ID'),
+    'client_secret': env('CLIENT_SECRET'),
     'api_auth': env('API_AUTH'),
     'api': env('API')
 }

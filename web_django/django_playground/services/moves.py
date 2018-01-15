@@ -24,22 +24,32 @@ class MovesService:
 
     def get_data(self, data_type, user, **kwargs):
         filters = ''
+        date = ''
+
+        if 'date' in kwargs:
+            date = '/' + kwargs['date']
+
         for param in kwargs:
-            filters += '{}={}&'.format(param, kwargs[param])
-        url = '{}/user/{}/daily?{}'.format(self.config['api'], data_type, filters)
+            if param != 'date':
+                filters += '{}={}&'.format(param, kwargs[param])
+
+        url = '{}/user/{}/daily{}?{}'.format(self.config['api'], data_type, date, filters)
         r = requests.get(url, headers=self.get_headers(user))
         print('MOVES API Request: {}'.format(url))
         print('MOVES API Response: {}'.format(r.text))
         return r.json()
 
-    def get_activities_past_days(self, user, daysPast):
-        return self.get_data('activities', user, pastDays=daysPast)
+    def get_activities_past_days(self, user, days_past):
+        return self.get_data('activities', user, pastDays=days_past)
 
-    def get_summary_past_days(self, user, daysPast):
-        return self.get_data('summary', user, pastDays=daysPast)
+    def get_summary_past_days(self, user, days_past):
+        return self.get_data('summary', user, pastDays=days_past)
 
-    def get_storyline_past_days(self, user, daysPast):
-        return self.get_data(data_type='storyline', user=user, pastDays=daysPast, trackPoints='true')
+    def get_storyline_past_days(self, user, days_past):
+        return self.get_data(data_type='storyline', user=user, pastDays=days_past, trackPoints='true')
+
+    def get_storyline_date(self, user, date):
+        return self.get_data(data_type='storyline', user=user, date=date, trackPoints='true')
 
     def get_profile(self, user):
         url = '{}/user/profile'.format(self.config['api'])

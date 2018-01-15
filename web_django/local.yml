@@ -34,6 +34,8 @@ services:
       - POSTGRES_USER=django_playground
     ports:
       - "5432:5432"
+    restart: unless-stopped
+
   pgadmin:
     links:
       - postgres:postgres
@@ -45,13 +47,17 @@ services:
    # networks:
    #   - postgres
     restart: unless-stopped
+
   localtunnel:
     image: efrecon/localtunnel
     links:
       - django
     command:
       --subdomain ${subdomain} --local-host django --port 8000
+    restart: unless-stopped
+
   mailhog:
     image: mailhog/mailhog:v1.0.0
     ports:
       - "8025:8025"
+    restart: unless-stopped
