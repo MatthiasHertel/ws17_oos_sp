@@ -3,7 +3,9 @@ from django.core.exceptions import ObjectDoesNotExist
 import logging
 import requests
 
-from ..users.models import MovesProfile
+from ..users.models import MovesProfile, MovesHistoryDate, MovesHistorySegment, MovesHistorySegmentActivity
+from datetime import date, datetime, timedelta
+import dateutil.parser
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -50,6 +52,24 @@ class MovesService:
 
     def get_storyline_date(self, user, date):
         return self.get_data(data_type='storyline', user=user, date=date, trackPoints='true')
+
+    def import_storyline_date(self, user, date):
+        storyline_data = self.get_data(data_type='storyline', user=user, date=date, trackPoints='true')
+
+        for day in storyline_data:
+            moves_history_date = user.moves_history_dates.create(
+                date=self.create_date(day['date']),
+                data=day['summary']
+            )
+            for segment in day['segments']:
+                # moves_history_date.moves_history_segments.create(
+                #     type=segment['type'],
+                #     start=segment['startTime'],
+                #     end=segment['endTime'],
+                #     last_update=segment['lastUpdate']
+                # )
+                for activity in segment['activities']:
+                    pass
 
     def get_profile(self, user):
         url = '{}/user/profile'.format(self.config['api'])
@@ -104,3 +124,12 @@ class MovesService:
 
     def get_headers(self, user):
         return {'Authorization':  'Bearer {}'.format(user.moves_profile.moves_access_token)}
+
+    def create_date(self, yyyymmdd):
+        # year = int(str(yyyymmdd)[0:4])
+        # month = int(str(yyyymmdd)[4:6])
+        # day = int(str(yyyymmdd)[6:8])
+        #
+        # return date(year, month, day)
+
+        return dateutil.parser.parse(yyyymmdd)

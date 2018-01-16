@@ -139,6 +139,7 @@ def geojson(request, date):
 
     user = User.objects.get(username=request.user.username)
     info = moves_service.get_storyline_date(user, api_date)
+    moves_service.import_storyline_date(user, api_date)
 
     features = []
     for segment in info[0]['segments']:
@@ -212,7 +213,6 @@ def make_date_from(yyyymmdd):
     month = int(str(yyyymmdd)[4:6])
     day = int(str(yyyymmdd)[6:8])
 
-    # logger.info("%s %s %s" % (year, month, day))
     re = date(year, month, day)
     return re
 
