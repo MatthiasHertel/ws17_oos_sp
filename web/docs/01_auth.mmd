@@ -1,0 +1,15 @@
+sequenceDiagram
+    participant U as User
+    participant Dj as Django Web
+    participant Pg as Postgres DB
+    participant Re as Redis-Queue
+    participant Pm as "Postmark Email-Service"
+    U->>Dj: User fuellt Neuregistrierungsformular aus
+    Dj->>Re: Django rendert Email und submitted Mail-Job an Redis (teurer Prozess)
+    Re->>Pm: Redis verarbeitet Queue (Email-Job)
+    Pm->>U: Postmark sendet Confirmation-Email mit Token-Url an Client
+    U->>Dj: User ruft Token-Url auf
+    Dj->>Dj: Validiert und bietet Confirm Button
+    U->>Dj: klickt Confirm-Button
+    Dj->>Pg: Django persistiert User-Credentials in Datenbank
+    Note over U,Pm: User-Registrierungs-Prozess
