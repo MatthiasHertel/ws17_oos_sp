@@ -11,7 +11,7 @@
       <div class="row">
         <div class="col-md-12">
           <h1>Objektorientierte Skriptsprachen (Python)</h1>
-          <p>Semesterprojekt Wintersemester 2017</p>
+          <p>Semesterprojekt Wintersemester 2017 von A. Wieding, M. Sotta und M.Hertel</p>
           <hr>
         </div>
       </div>
@@ -19,16 +19,120 @@
         <div class="col-md-12">
           <h2>Beschreibung des Semesterprojektes:</h2>
           <p>
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+            Django Webapplikation (features)
+            <ul>
+              <li>
+                <p> User Authentifizierung</p>
+                <ol>
+                  <li>
+                    User meldet sich an
+                  </li>
+                  <li>
+                    User bekommt eine Bestaetigungsmail
+                  </li>
+                  <li>
+                    User ist Authentifiziert und kann sich anmelden
+                  </li>
+                  <li>(Passwort vergessen ebenfalls implementiert)</li>
+                </ol>
+              </li>
+
+              <li>
+                <p> OAuth Moves App</p>
+                <ol>
+                  <li>
+                    User verbindet sich mit seiner Moves-App
+                  </li>
+                  <li>
+                    User bekommt von Authentifizierungs-Service der Moves-Applikation eine Pin angezeigt
+                    <div class="row">
+                      <div class="col-md-4">
+                        <div class="thumbnail">
+                          <a href="/img/auth_service_moves.png">
+                            <img src="/img/auth_service_moves.png" alt="Lights" style="width:100%">
+                          </a>
+                            <div class="caption">
+                              <p>Tabellenansicht der letzten 30 Tage.</p>
+                            </div>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                  <li>
+                    Diese Pin traegt der User in seine Handy-App ein
+                    <div class="row">
+                      <div class="col-md-4">
+                        <div class="thumbnail">
+                          <a href="/img/oauth_moves.png">
+                            <img src="/img/oauth_moves.png" alt="Lights" style="width:100%">
+                          </a>
+                            <div class="caption">
+                              <p>Tabellenansicht der letzten 30 Tage.</p>
+                            </div>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                  <li>
+                    Automatischer redirect zur Webapplikation (django)
+                  </li>
+                </ol>
+              </li>
+              <li>
+                <p> Importieren der Moves-Daten</p>
+                <ol>
+                  <li>
+                    Der User kann die Daten in die Webapplikation (in seinen User-Context) importieren. (die Api von Moves erlaubt nur Abfragen ueber bestimmte Zeitbereiche (max 30 Tage))
+                  </li>
+
+                </ol>
+              </li>
+              <li>
+                <p> Darstellen der Daten der Moves-App</p>
+                <ol>
+                  <li>
+                    Der User kann sich monatliche Tabellen-Uebersicht seiner Moves-Daten anzeigen.
+                    <div class="row">
+                      <div class="col-md-4">
+                        <div class="thumbnail">
+                          <a href="/img/table_view.png">
+                            <img src="/img/table_view.png" alt="Lights" style="width:100%">
+                          </a>
+                            <div class="caption">
+                              <p>Tabellenansicht der letzten 30 Tage.</p>
+                            </div>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                  <li>
+                    <p> Der User kann sich eine Kartenansicht des Tages mit Bewegungsablaeufen anzeigen lassen.</p>
+                    <div class="row">
+                      <div class="col-md-4">
+                        <div class="thumbnail">
+                          <a href="/img/mapview3.png">
+                            <img src="/img/mapview3.png" alt="Lights" style="width:100%">
+                          </a>
+                            <div class="caption">
+                              <p>Kartenansicht fuer das Datum 1-11-2018</p>
+                            </div>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                </ol>
+
+              </li>
+            </ul>
           </p>
         </div>
       </div>
       <div class="row">
         <div class="col-md-12">
           <h2>Dokumentation:</h2>
-          <p>
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-          </p>
+          <p>hier folgt die Dokumentation ...</p>
+          <h4>Endpoints:</h4>
+          <h4>Sequenz-Diagramme:</h4>
         </div>
       </div>
     </div>
