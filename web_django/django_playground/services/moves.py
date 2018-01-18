@@ -3,9 +3,8 @@ from django.core.exceptions import ObjectDoesNotExist
 import logging
 import requests
 
-from ..users.models import MovesProfile, MovesHistoryDate, MovesHistorySegment, MovesHistorySegmentActivity
+from ..users.models import DataProfile, DataPoint
 from datetime import date, datetime, timedelta
-import dateutil.parser
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -16,15 +15,22 @@ class MovesService:
 
     config = settings.MOVES
 
+    name = 'moves'
+
     def is_user_authenticated(self, user):
         try:
-            return True if user.moves_profile.moves_access_token and user.moves_profile.moves_refresh_token else False
+            moves_profile = user.data_profiles.get(provider=self.name)
+            if 'access_token' in moves_profile.auth_data and moves_profile.auth_data['access_token'] and 'refresh_token' in moves_profile.auth_data and moves_profile.auth_data['refresh_token']:
+                return True
+            else:
+                return False
         except ObjectDoesNotExist:
-            user.moves_profile = MovesProfile()
-            user.moves_profile.save()
+            user.data_profiles.create(
+                provider=self.name
+            )
             return False
 
-    def get_data(self, data_type, user, **kwargs):
+    def get_data(self, data_type, moves_profile, **kwargs):
         filters = ''
         date = ''
 
@@ -36,31 +42,31 @@ class MovesService:
                 filters += '{}={}&'.format(param, kwargs[param])
 
         url = '{}/user/{}/daily{}?{}'.format(self.config['api'], data_type, date, filters)
-        r = requests.get(url, headers=self.get_headers(user))
+        r = requests.get(url, headers=self.get_headers(moves_profile))
         print('MOVES API Request: {}'.format(url))
         print('MOVES API Response: {}'.format(r.text))
         return r.json()
 
     def get_activities_past_days(self, user, days_past):
-        return self.get_data('activities', user, pastDays=days_past)
+        return self.get_data('activities', user.data_profiles.get(provider=self.name), pastDays=days_past)
 
     def get_summary_past_days(self, user, days_past):
-        return self.get_data('summary', user, pastDays=days_past)
+        return self.get_data('summary', user.data_profiles.get(provider=self.name), pastDays=days_past)
 
     def get_storyline_past_days(self, user, days_past):
-        return self.get_data(data_type='storyline', user=user, pastDays=days_past, trackPoints='true')
+        return self.get_data(data_type='storyline', moves_profile=user.data_profiles.get(provider=self.name), pastDays=days_past, trackPoints='true')
 
     def get_storyline_date(self, user, date):
-        return self.get_data(data_type='storyline', user=user, date=date, trackPoints='true')
+        return self.get_data(data_type='storyline', moves_profile=user.data_profiles.get(provider=self.name), date=date, trackPoints='true')
 
     def import_storyline_date(self, user, date):
-        storyline_data = self.get_data(data_type='storyline', user=user, date=date, trackPoints='true')
+        storyline_data = self.get_data(data_type='storyline', moves_profile=user.data_profiles.get(provider=self.name), date=date, trackPoints='true')
 
         for day in storyline_data:
-            moves_history_date = user.moves_history_dates.create(
-                date=self.create_date(day['date']),
-                data=day['summary']
-            )
+            # moves_history_date = user.moves_history_dates.create(
+            #     date=self.create_date(day['date']),
+            #     data=day['summary']
+            # )
             for segment in day['segments']:
                 # moves_history_date.moves_history_segments.create(
                 #     type=segment['type'],
@@ -71,24 +77,24 @@ class MovesService:
                 for activity in segment['activities']:
                     pass
 
-    def get_profile(self, user):
+    def get_profile(self, moves_profile):
         url = '{}/user/profile'.format(self.config['api'])
-        r = requests.get(url, headers=self.get_headers(user))
+        r = requests.get(url, headers=self.get_headers(moves_profile))
         return r.json()
 
-    def sync_profile_data(self, user):
-        profile = self.get_profile(user)
-        user.moves_profile.data = profile
+    def sync_profile_data(self, moves_profile):
+        profile = self.get_profile(moves_profile)
+        moves_profile.data = profile
 
     def create_auth(self, code, user):
         """Create first access Token using Smartphone code from callback url."""
         access_token_url = '{}/access_token?grant_type=authorization_code&code={}&client_id={}&client_secret={}'.format(self.config['api_auth'], code, self.config['client_id'], self.config['client_secret'])
         response = requests.post(access_token_url).json()
         if 'error' not in response:
-            user.moves_profile.moves_access_token = response['access_token']
-            user.moves_profile.moves_refresh_token = response['refresh_token']
-            self.sync_profile_data(user)
-            user.moves_profile.save()
+            moves_profile = user.data_profiles.get(provider=self.name)
+            moves_profile.auth_data = response
+            self.sync_profile_data(moves_profile)
+            moves_profile.save()
         else:
             raise Exception(response['error'])
 
@@ -98,19 +104,22 @@ class MovesService:
 
     def validate_access_token(self, user):
         """Validate the access token."""
-        validate_url = '{}/tokeninfo?access_token={}'.format(self.config['api_auth'], user.moves_profile.moves_access_token)
+        moves_profile = user.data_profiles.get(provider=self.name)
+        validate_url = '{}/tokeninfo?access_token={}'.format(
+            self.config['api_auth'], moves_profile.auth_data['access_token']
+        )
         response = requests.get(validate_url).json()
         return True if 'error' not in response else False
 
     def refresh_access_token(self, user):
         """Refresh the access token."""
-        access_token_url = '{}/access_token?grant_type=refresh_token&refresh_token={}&client_id={}&client_secret={}'.format(self.config['api_auth'], user.moves_profile.moves_refresh_token, self.config['client_id'], self.config['client_secret'])
+        moves_profile = user.data_profiles.get(provider=self.name)
+        access_token_url = '{}/access_token?grant_type=refresh_token&refresh_token={}&client_id={}&client_secret={}'.format(self.config['api_auth'], moves_profile.auth_data['refresh_token'], self.config['client_id'], self.config['client_secret'])
         response = requests.post(access_token_url).json()
         if 'error' not in response:
-            user.moves_profile.moves_access_token = response['access_token']
-            user.moves_profile.moves_refresh_token = response['refresh_token']
+            moves_profile.auth_data = response
             self.sync_profile_data(user)
-            user.moves_profile.save()
+            moves_profile.save()
         else:
             raise Exception(response['error'])
 
@@ -122,14 +131,11 @@ class MovesService:
     def get_config(self):
         return settings.MOVES
 
-    def get_headers(self, user):
-        return {'Authorization':  'Bearer {}'.format(user.moves_profile.moves_access_token)}
+    def get_headers(self, moves_profile):
+        return {'Authorization':  'Bearer {}'.format(moves_profile.auth_data['access_token'])}
 
-    def create_date(self, yyyymmdd):
-        # year = int(str(yyyymmdd)[0:4])
-        # month = int(str(yyyymmdd)[4:6])
-        # day = int(str(yyyymmdd)[6:8])
-        #
-        # return date(year, month, day)
-
-        return dateutil.parser.parse(yyyymmdd)
+    def create_date(self, date_string):
+        try:
+            return datetime.strptime(date_string, '%Y%m%dT%H%M%S%z')
+        except ValueError:
+            return datetime.strptime(date_string, '%Y%m%d')

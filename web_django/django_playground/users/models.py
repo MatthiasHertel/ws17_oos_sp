@@ -20,68 +20,30 @@ class User(AbstractUser):
         return reverse('users:detail', kwargs={'username': self.username})
 
 
-class MovesProfile(models.Model):
-    user = models.OneToOneField(
-        User,
-        on_delete=models.CASCADE,
-        primary_key=True,
-        related_name='moves_profile'
-    )
-
-    moves_access_token = models.CharField(_('Moves API Access Token of User'), blank=True, max_length=255)
-    moves_refresh_token = models.CharField(_('Moves API Refresh Token of User'), blank=True, max_length=255)
-    data = JSONField(default=list)
-
-    def __str__(self):
-        return "Moves Profile of User {}".format(self.user.name)
-
-
-class MovesHistoryDate(models.Model):
+class DataProfile(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='moves_history_dates'
+        related_name='data_profiles'
     )
-    date = models.DateField(_('Date for the History Data'), editable=False, default=datetime.date.today)
-    data = JSONField(default=list)
+
+    provider = models.CharField(_('Name of Data Provider'), editable=False, max_length=255)
+    auth_data = JSONField(default=dict)
+    data = JSONField(default=dict)
 
     def __str__(self):
-        return "Moves Data History of User {}".format(self.user.name)
+        return "Data Profile of User {}".format(self.user.name)
 
 
-class MovesHistorySegment(models.Model):
-    moves_history_date = models.ForeignKey(
-        MovesHistoryDate,
+class DataPoint(models.Model):
+    data_profile = models.ForeignKey(
+        DataProfile,
         on_delete=models.CASCADE,
-        related_name='moves_history_segments'
+        related_name='data_points'
     )
-
-    type = models.CharField(_('Type of Segment'),editable=False, max_length=255)
-    start = models.DateTimeField(_('Start of Segment'), editable=False, default=datetime.date.today)
-    end = models.DateTimeField(_('End of Segment'), editable=False, default=datetime.date.today)
-    last_update = models.DateTimeField(_('Last Update to Segment'), editable=False, default=datetime.date.today)
-    data = JSONField(default=list)
+    date = models.DateField(_('Date for the Data Point'), editable=False, default=datetime.date.today)
+    type = models.CharField(_('Type of Data Point'), editable=False, max_length=255)
+    data = JSONField(default=dict)
 
     def __str__(self):
-        return "Moves Segment of a MovesHistoryDate {}".format(self.moves_history_date.date)
-
-
-class MovesHistorySegmentActivity(models.Model):
-    moves_history_segment = models.ForeignKey(
-        MovesHistorySegment,
-        on_delete=models.CASCADE,
-        related_name='moves_history_activities'
-    )
-
-    activity = models.CharField(_('Type of Activity'),editable=False, max_length=255)
-    group = models.CharField(_('Group of Activity'),editable=False, max_length=255)
-    duration = models.IntegerField(_('Duration of Activity'),editable=False)
-    distance = models.IntegerField(_('Distance traveled'),editable=False)
-    steps = models.IntegerField(_('Steps taken'),editable=False)
-    calories = models.IntegerField(_('Calories burned'),editable=False)
-    start = models.DateTimeField(_('Start of Activity'), editable=False, default=datetime.date.today)
-    end = models.DateTimeField(_('End of Activity'), editable=False, default=datetime.date.today)
-    trackpoints = JSONField(_('LatLong Trackpoints'),default=list)
-
-    def __str__(self):
-        return "Moves Activity of a Segment {}".format(self.moves_history_date.date)
+        return "Data Point for a specific data provider and date {}".format(self.user.name)

@@ -10,7 +10,7 @@ import json
 import matplotlib.pyplot as plt
 
 from .models import User
-from .models import MovesProfile
+from .models import DataProfile
 from ..services import moves_service
 
 from datetime import date, datetime, timedelta
@@ -38,9 +38,9 @@ class UserDetailView(LoginRequiredMixin, DetailView):
         context['moves_auth_url'] = moves_service.get_auth_url()
 
         days = []
-        if user_is_authenticated:
-            moves_service.validate_authentication(user)
-            context['data'] = moves_service.get_summary_past_days(user, 30)
+        # if user_is_authenticated:
+        #     moves_service.validate_authentication(user)
+        #     context['data'] = moves_service.get_summary_past_days(user, 30)
             # for day in context['data']:
             #     daily_sum = 0
             #     if day['summary']:
@@ -85,11 +85,11 @@ class UserMovesRegisterView(LoginRequiredMixin, SingleObjectMixin, View):
     def get(self, request, *args, **kwargs):
         user = User.objects.get(username=request.user.username)
         if 'code' in request.GET:
-            try:
-                moves_service.create_auth(request.GET.get('code'), user)
-                return redirect('users:detail', username=request.user.username)
-            except Exception as e:
-                return JsonResponse(e, 400)
+            # try:
+            moves_service.create_auth(request.GET.get('code'), user)
+            return redirect('users:detail', username=request.user.username)
+            # except Exception as e:
+            #     return JsonResponse(e.msg, 400)
         elif 'error' in request.GET:
             return HttpResponse(request.GET, 400)
         else:
@@ -121,12 +121,13 @@ def list(request):
         day['dateObj'] = make_date_from(day['date'])
         day['summary'] = make_summaries(day)
 
-    using_for = get_days_using(user.moves_profile.data['profile']['firstDate'])
-    months = get_month_range(user.moves_profile.data['profile']['firstDate'])
+    moves_profile = user.data_profiles.get(provider='moves')
+    using_for = get_days_using(moves_profile.data['profile']['firstDate'])
+    months = get_month_range(moves_profile.data['profile']['firstDate'])
 
     return render(request, 'pages/list.html', {
             'user': user,
-            'profile': json.dumps(user.moves_profile.data, indent=2),
+            'profile': json.dumps(moves_profile.data, indent=2),
             'summary': summary,
             'days': using_for,
             'months': months
