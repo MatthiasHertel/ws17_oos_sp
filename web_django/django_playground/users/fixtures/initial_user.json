@@ -1,0 +1,41 @@
+[
+  {
+    "model": "users.user",
+    "pk": 1,
+    "fields": {
+      "password": "argon2$argon2i$v=19$m=512,t=2,p=2$d2VuNG5aRHVnbEFx$MUH8+xRbDCz+qvc6KyTy+w",
+      "last_login": "2018-01-18T11:16:02.190Z",
+      "is_superuser": false,
+      "username": "testuser",
+      "first_name": "",
+      "last_name": "",
+      "email": "test@test.de",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2018-01-18T11:15:17.924Z",
+      "name": "",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.dataprofile",
+    "pk": 1,
+    "fields": {
+      "user": 1,
+      "provider": "moves",
+      "auth_data": "{}",
+      "data": "{}"
+    }
+  },
+  {
+    "model": "account.emailaddress",
+    "pk": 1,
+    "fields": {
+      "user": 1,
+      "email": "test@test.de",
+      "verified": true,
+      "primary": true
+    }
+  }
+]
