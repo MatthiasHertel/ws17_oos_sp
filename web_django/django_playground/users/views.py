@@ -38,9 +38,9 @@ class UserDetailView(LoginRequiredMixin, DetailView):
         context['moves_auth_url'] = moves_service.get_auth_url()
 
         days = []
-        # if user_is_authenticated:
-        #     moves_service.validate_authentication(user)
-        #     context['data'] = moves_service.get_summary_past_days(user, 30)
+        if user_is_authenticated:
+            moves_service.validate_authentication(user)
+            context['data'] = moves_service.get_summary_past_days(user, 30)
             # for day in context['data']:
             #     daily_sum = 0
             #     if day['summary']:
@@ -247,7 +247,7 @@ def geojson_place(segment):
         feature['properties'][key] = segment[key]
 
     # make a nice duration number as well
-    print(segment['startTime'])
+    # print(segment['startTime'])
     # start = datetime.strptime(segment['startTime'], '%Y%m%dT%H%M%Sz')
     # end = datetime.strptime(segment['endTime'], '%Y%m%dT%H%M%Sz')
     # duration = end-start
@@ -277,7 +277,7 @@ def geojson_move(segment):
     features = []
     lookup = {'walking': 'Walking', 'transport': 'Transport', 'run': 'Running', 'cycling': 'Cycling'}
     stroke = {'walking': '#00d45a', 'transport': '#000000', 'run': '#93139a', 'cycling': '#00ceef'}
-    print ("\n\n\n\n\n\n\n\n\n\n\{}".format(segment))
+    # print ("\n\n\n\n\n\n\n\n\n\n\{}".format(segment))
     for activity in segment['activities']:
         trackpoints = activity['trackPoints']
         coordinates = [[point['lon'], point['lat']] for point in trackpoints]

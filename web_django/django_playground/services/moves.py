@@ -60,22 +60,16 @@ class MovesService:
         return self.get_data(data_type='storyline', moves_profile=user.data_profiles.get(provider=self.name), date=date, trackPoints='true')
 
     def import_storyline_date(self, user, date):
-        storyline_data = self.get_data(data_type='storyline', moves_profile=user.data_profiles.get(provider=self.name), date=date, trackPoints='true')
+        moves_profile = user.data_profiles.get(provider=self.name)
+        storyline_data = self.get_data(data_type='storyline', moves_profile=moves_profile, date=date, trackPoints='true')
 
         for day in storyline_data:
-            # moves_history_date = user.moves_history_dates.create(
-            #     date=self.create_date(day['date']),
-            #     data=day['summary']
-            # )
             for segment in day['segments']:
-                # moves_history_date.moves_history_segments.create(
-                #     type=segment['type'],
-                #     start=segment['startTime'],
-                #     end=segment['endTime'],
-                #     last_update=segment['lastUpdate']
-                # )
-                for activity in segment['activities']:
-                    pass
+                moves_profile.data_points.create(
+                    date=self.create_date(day['date']),
+                    type=segment['type'],
+                    data=segment
+                )
 
     def get_profile(self, moves_profile):
         url = '{}/user/profile'.format(self.config['api'])
