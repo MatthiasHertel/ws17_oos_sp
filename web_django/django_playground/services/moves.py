@@ -65,11 +65,16 @@ class MovesService:
 
         for day in storyline_data:
             for segment in day['segments']:
-                moves_profile.data_points.create(
+                if not moves_profile.data_points.filter(
                     date=self.create_date(day['date']),
                     type=segment['type'],
-                    data=segment
-                )
+                    data__lastUpdate__contains=segment['lastUpdate']
+                ):
+                    moves_profile.data_points.create(
+                        date=self.create_date(day['date']),
+                        type=segment['type'],
+                        data=segment
+                    )
 
     def get_profile(self, moves_profile):
         url = '{}/user/profile'.format(self.config['api'])
