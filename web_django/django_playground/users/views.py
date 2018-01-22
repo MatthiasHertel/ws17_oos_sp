@@ -40,15 +40,7 @@ class UserDetailView(LoginRequiredMixin, DetailView):
         days = []
         if user_is_authenticated:
             moves_service.validate_authentication(user)
-            context['data'] = moves_service.get_summary_past_days(user, 30)
-            # for day in context['data']:
-            #     daily_sum = 0
-            #     if day['summary']:
-            #         for activity in day['summary']:
-            #             if activity['activity'] == 'cycling':
-            #                 daily_sum += activity['distance']
-            #     days.append(daily_sum)
-
+            # moves_service.import_storyline(user)
 
         # fig = plt.plot(days)
         # plt.ylabel('some numbers')
@@ -140,7 +132,6 @@ def geojson(request, date):
 
     user = User.objects.get(username=request.user.username)
     info = moves_service.get_storyline_date(user, api_date)
-    moves_service.import_storyline_date(user, api_date)
 
     features = []
     for segment in info[0]['segments']:

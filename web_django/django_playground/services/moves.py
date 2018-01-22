@@ -4,7 +4,7 @@ import logging
 import requests
 
 from ..users.models import DataProfile, DataPoint
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -59,22 +59,37 @@ class MovesService:
     def get_storyline_date(self, user, date):
         return self.get_data(data_type='storyline', moves_profile=user.data_profiles.get(provider=self.name), date=date, trackPoints='true')
 
+    def import_storyline(self, user):
+        moves_profile = user.data_profiles.get(provider=self.name)
+        if 'profile' in moves_profile.data:
+            next_date = self.create_date(moves_profile.data['profile']['firstDate'])
+            #current_date = datetime.now() + timedelta(days=1)
+            current_date = next_date + timedelta(days=30)
+            import_done = False
+            while not import_done:
+                self.import_storyline_date(user, next_date)
+                next_date = next_date + timedelta(days=1)
+                if next_date.strftime('%Y%m%d') == current_date.strftime('%Y%m%d'):
+                    import_done = True
+
     def import_storyline_date(self, user, date):
         moves_profile = user.data_profiles.get(provider=self.name)
         storyline_data = self.get_data(data_type='storyline', moves_profile=moves_profile, date=date, trackPoints='true')
 
         for day in storyline_data:
-            for segment in day['segments']:
-                if not moves_profile.data_points.filter(
-                    date=self.create_date(day['date']),
-                    type=segment['type'],
-                    data__lastUpdate__contains=segment['lastUpdate']
-                ):
-                    moves_profile.data_points.create(
+            if 'segments' in day and day['segments']:
+                for segment in day['segments']:
+                    if not moves_profile.data_points.filter(
                         date=self.create_date(day['date']),
                         type=segment['type'],
-                        data=segment
-                    )
+                        data__lastUpdate__contains=segment['lastUpdate']
+                    ):
+                        print('importing data')
+                        moves_profile.data_points.create(
+                            date=self.create_date(day['date']),
+                            type=segment['type'],
+                            data=segment
+                        ).save()
 
     def get_profile(self, moves_profile):
         url = '{}/user/profile'.format(self.config['api'])
