@@ -35,13 +35,14 @@ class MovesService:
         date = ''
 
         if 'date' in kwargs:
-            date = '/' + kwargs['date']
+            date = '/' + kwargs['date'].strftime('%Y%m%d')
 
         for param in kwargs:
             if param != 'date':
                 filters += '{}={}&'.format(param, kwargs[param])
 
         url = '{}/user/{}/daily{}?{}'.format(self.config['api'], data_type, date, filters)
+        print(url)
         r = requests.get(url, headers=self.get_headers(moves_profile))
         print('MOVES API Request: {}'.format(url))
         print('MOVES API Response: {}'.format(r.text))
@@ -66,8 +67,7 @@ class MovesService:
         moves_profile = user.data_profiles.get(provider=self.name)
         if 'profile' in moves_profile.data:
             next_date = self.create_date(moves_profile.data['profile']['firstDate'])
-            #current_date = datetime.now() + timedelta(days=1)
-            current_date = next_date + timedelta(days=30)
+            current_date = datetime.now() + timedelta(days=1)
             import_done = False
             while not import_done:
                 self.import_storyline_date(user, next_date)
@@ -87,7 +87,6 @@ class MovesService:
                         type=segment['type'],
                         data__lastUpdate__contains=segment['lastUpdate']
                     ):
-                        print('importing data')
                         moves_profile.data_points.create(
                             date=self.create_date(day['date']),
                             type=segment['type'],

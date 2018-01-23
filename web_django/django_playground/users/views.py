@@ -33,14 +33,12 @@ class UserDetailView(LoginRequiredMixin, DetailView):
         user = User.objects.get(username=self.request.user.username)
         user_is_authenticated = moves_service.is_user_authenticated(user)
 
+        if user_is_authenticated:
+            moves_service.validate_authentication(user)
+
         context = super(UserDetailView, self).get_context_data(**kwargs)
         context['moves_connected'] = user_is_authenticated
         context['moves_auth_url'] = moves_service.get_auth_url()
-
-        days = []
-        if user_is_authenticated:
-            moves_service.validate_authentication(user)
-            # moves_service.import_storyline(user)
 
         # fig = plt.plot(days)
         # plt.ylabel('some numbers')
@@ -77,15 +75,28 @@ class UserMovesRegisterView(LoginRequiredMixin, SingleObjectMixin, View):
     def get(self, request, *args, **kwargs):
         user = User.objects.get(username=request.user.username)
         if 'code' in request.GET:
-            # try:
-            moves_service.create_auth(request.GET.get('code'), user)
-            return redirect('users:detail', username=request.user.username)
-            # except Exception as e:
-            #     return JsonResponse(e.msg, 400)
+            try:
+                moves_service.create_auth(request.GET.get('code'), user)
+                return redirect('users:detail', username=request.user.username)
+            except Exception as e:
+                return JsonResponse(e.msg, 400)
         elif 'error' in request.GET:
             return HttpResponse(request.GET, 400)
         else:
             return HttpResponse('Unknown Error', 500)
+
+
+class UserMovesImportView(LoginRequiredMixin, SingleObjectMixin, View):
+    def get(self, request, *args, **kwargs):
+        user = User.objects.get(username=request.user.username)
+        if moves_service.is_user_authenticated(user):
+            try:
+                moves_service.import_storyline(user)
+                return redirect('users:detail', username=user.username)
+            except Exception as e:
+                return HttpResponse(e.msg, 400)
+        else:
+            return HttpResponse('Moves Not Authenticated', 400)
 
 
 class UserListView(LoginRequiredMixin, ListView):

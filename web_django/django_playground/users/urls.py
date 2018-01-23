@@ -29,6 +29,11 @@ urlpatterns = [
         view=views.UserMovesRegisterView.as_view(),
         name='moves_register'
     ),
+    url(
+        regex=r'^~moves/import$',
+        view=views.UserMovesImportView.as_view(),
+        name='moves_import'
+    ),
     url('list', views.list, name='list'),
     url(
         regex=r'^month/(?P<date>\d{4}\d{2})/$',
