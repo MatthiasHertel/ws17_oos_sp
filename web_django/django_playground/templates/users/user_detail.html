@@ -27,19 +27,11 @@
     <a class="btn btn-primary" href="{% url 'users:update' %}" role="button">My Info</a>
     <a class="btn btn-primary" href="{% url 'account_email' %}" role="button">E-Mail</a>
       {% if not moves_connected %}
-        <a class="btn btn-primary" href="{{ moves_auth_url }}" role="button">Connect Moves</a>
-
+          <a class="btn btn-primary" href="{{ moves_auth_url }}" role="button">Connect Moves</a>
+      {% else %}
+          <a class="btn btn-primary" href="{% url 'users:moves_import' %}" role="button">Import Moves Data</a>
       {% endif %}
-      <a class="btn btn-primary" href="{% url 'users:list' %}" role="button">Moves Data</a>
-
-    <!-- TODO that should also come from db the client id-->
-    <!-- hardcode from arne -->
-    <!-- <a class="btn btn-primary" href="https://api.moves-app.com/oauth/v1/authorize?response_type=code&client_id=nXLqaAKvk5nnptyNEFr2A686JslcdGm8&scope=activity location" role="button">Connect Moves</a>-->
-
-    <!-- hardcode from matthias -->
-    <!-- <a class="btn btn-primary" href="https://api.moves-app.com/oauth/v1/authorize?response_type=code&client_id=1LNW6VS672jF887n2TBOW1F99uba15Qr&scope=activity location" role="button">Connect Moves</a>  -->
-
-    <!-- Your Stuff: Custom user template urls -->
+      <a class="btn btn-primary" href="{% url 'users:list' %}" role="button">View Moves Data</a>
   </div>
 
 </div>
