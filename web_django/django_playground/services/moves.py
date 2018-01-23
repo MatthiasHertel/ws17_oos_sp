@@ -35,7 +35,8 @@ class MovesService:
         date = ''
 
         if 'date' in kwargs:
-            date = '/' + kwargs['date'].strftime('%Y%m%d')
+            # date = '/' + kwargs['date'].strftime('%Y%m%d')
+            date = '/' + kwargs['date']
 
         for param in kwargs:
             if param != 'date':
