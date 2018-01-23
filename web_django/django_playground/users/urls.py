@@ -30,6 +30,11 @@ urlpatterns = [
         name='moves_register'
     ),
     url('list', views.list, name='list'),
+    url(
+        regex=r'^month/(?P<date>\d{4}\d{2})/$',
+        view=views.month,
+        name='month'
+    ),
     url(regex=r'^map/(?P<date>\d{4}-\d{2}-\d{2})/$', view=views.map, name='map'),
     url(regex=r'^geojson/(?P<date>\d{4}-\d{2}-\d{2})/$', view=views.geojson, name='geojson'),
 

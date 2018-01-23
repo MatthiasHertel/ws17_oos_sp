@@ -53,6 +53,9 @@ class MovesService:
     def get_summary_past_days(self, user, days_past):
         return self.get_data('summary', user.data_profiles.get(provider=self.name), pastDays=days_past)
 
+    def get_summary_month(self, user, year_month):
+        return self.get_data('summary', user.data_profiles.get(provider=self.name), date=year_month)
+
     def get_storyline_past_days(self, user, days_past):
         return self.get_data(data_type='storyline', moves_profile=user.data_profiles.get(provider=self.name), pastDays=days_past, trackPoints='true')
 

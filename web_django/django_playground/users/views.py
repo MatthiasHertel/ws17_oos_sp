@@ -123,7 +123,7 @@ def list(request):
             'summary': summary,
             'days': using_for,
             'months': months
-        })
+    })
 
 
 def geojson(request, date):
@@ -144,6 +144,34 @@ def geojson(request, date):
     filename = "moves-%s.geojson" % date
     # headers = (('Content-Disposition', 'attachment; filename="%s"' % filename),)
     return HttpResponse(json.dumps(geojson),  content_type='application/geo+json')
+
+
+def month(request, date):
+
+    user = User.objects.get(username=request.user.username)
+
+    # get selected month-name & year for month-view
+    selMonth = get_month_name(date)
+    selYear = get_year_name(date)
+
+    summary = moves_service.get_summary_month(user, date)
+    summary.reverse()
+    for day in summary:
+        day['dateObj'] = make_date_from(day['date'])
+        day['summary'] = make_summaries(day)
+
+    moves_profile = user.data_profiles.get(provider='moves')
+    months = get_month_range(moves_profile.data['profile']['firstDate'])
+
+    return render(request, 'pages/month.html', {
+            'user': user,
+            'profile': json.dumps(moves_profile.data, indent=2),
+            'summary': summary,
+            'months': months,
+            'date' : date,
+            'sel_month': selMonth,
+            'sel_year' : selYear
+    })
 
 
 def validate_date(date):
@@ -207,6 +235,18 @@ def make_date_from(yyyymmdd):
 
     re = date(year, month, day)
     return re
+
+
+def get_month_name(yyyymm):
+    month = int(str(yyyymm)[4:6])
+    # generating month name from month int
+    mstr = date(1900, month, 1).strftime('%B')
+    return mstr
+
+
+def get_year_name(yyyymm):
+    year = int(str(yyyymm)[0:4])
+    return str(year)
 
 
 def make_summaries(day):
