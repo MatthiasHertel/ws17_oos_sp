@@ -46,4 +46,4 @@ class DataPoint(models.Model):
     data = JSONField(default=dict)
 
     def __str__(self):
-        return "Data Point for a specific data provider and date {}".format(self.user.name)
+        return "Data Point for a specific data provider and date {}".format(self.data_profile.user.name)

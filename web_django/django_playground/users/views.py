@@ -142,7 +142,7 @@ def geojson(request, date):
     validate_date(api_date)
 
     user = User.objects.get(username=request.user.username)
-    info = moves_service.get_storyline_date(user, api_date)
+    info = moves_service.get_storyline_date(user, make_date_from(api_date))
 
     features = []
     for segment in info[0]['segments']:

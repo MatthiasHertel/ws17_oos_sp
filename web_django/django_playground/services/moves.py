@@ -35,19 +35,56 @@ class MovesService:
         date = ''
 
         if 'date' in kwargs:
-            # date = '/' + kwargs['date'].strftime('%Y%m%d')
-            date = '/' + kwargs['date']
+            date = '/' + kwargs['date'].strftime('%Y%m%d')
 
         for param in kwargs:
             if param != 'date':
                 filters += '{}={}&'.format(param, kwargs[param])
 
         url = '{}/user/{}/daily{}?{}'.format(self.config['api'], data_type, date, filters)
-        print(url)
         r = requests.get(url, headers=self.get_headers(moves_profile))
         print('MOVES API Request: {}'.format(url))
         print('MOVES API Response: {}'.format(r.text))
         return r.json()
+
+    def get_data_points_date(self, user, date):
+        moves_profile = user.data_profiles.get(provider=self.name)
+        data_points = moves_profile.data_points.filter(
+            date=date
+        )
+        return self.transform_data_points(data_points)
+
+    def get_data_points_past_days(self, user, days_past):
+        moves_profile = user.data_profiles.get(provider=self.name)
+        to_date = moves_profile.data_points.latest('date').date
+        from_date = to_date - timedelta(days=days_past)
+        data_points = moves_profile.data_points.filter(
+            date__gte=from_date,
+            date__lte=to_date
+        )
+
+        return self.transform_data_points(data_points)
+
+    def transform_data_points(self, data_points):
+        data_by_day = dict()
+        for p in data_points:
+            if p.date not in data_by_day:
+                data_by_day[p.date] = dict(
+                    data=p.date,
+                    summary={},
+                    segments=[]
+                )
+            # for activity in p.data['activities']:
+            #     if activity not in data_by_day[p.date]['summary']:
+            #         data_by_day[p.date]['summary']['activity'] = dict(
+            #         )
+            data_by_day[p.date]['segments'].append(p.data)
+
+        response = []
+        for day in data_by_day:
+            response.append(data_by_day[day])
+
+        return response
 
     def get_activities_past_days(self, user, days_past):
         return self.get_data('activities', user.data_profiles.get(provider=self.name), pastDays=days_past)
@@ -62,7 +99,7 @@ class MovesService:
         return self.get_data(data_type='storyline', moves_profile=user.data_profiles.get(provider=self.name), pastDays=days_past, trackPoints='true')
 
     def get_storyline_date(self, user, date):
-        return self.get_data(data_type='storyline', moves_profile=user.data_profiles.get(provider=self.name), date=date, trackPoints='true')
+        return self.get_data_points_date(user, date)
 
     def import_storyline(self, user):
         moves_profile = user.data_profiles.get(provider=self.name)
