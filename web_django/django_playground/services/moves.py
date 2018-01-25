@@ -3,8 +3,9 @@ from django.core.exceptions import ObjectDoesNotExist
 import logging
 import requests
 
-from ..users.models import DataProfile, DataPoint
+import json
 from datetime import datetime, timedelta
+from calendar import monthrange
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -47,6 +48,16 @@ class MovesService:
         print('MOVES API Response: {}'.format(r.text))
         return r.json()
 
+    def get_data_points_month(self, user, date):
+        first_dat, num_days = monthrange(date.year, date.month)
+        moves_profile = user.data_profiles.get(provider=self.name)
+        to_date = date + timedelta(days=num_days)
+        data_points = moves_profile.data_points.filter(
+            date__gte=date,
+            date__lte=to_date
+        )
+        return self.transform_data_points(data_points)
+
     def get_data_points_date(self, user, date):
         moves_profile = user.data_profiles.get(provider=self.name)
         data_points = moves_profile.data_points.filter(
@@ -62,7 +73,6 @@ class MovesService:
             date__gte=from_date,
             date__lte=to_date
         )
-
         return self.transform_data_points(data_points)
 
     def transform_data_points(self, data_points):
@@ -70,33 +80,47 @@ class MovesService:
         for p in data_points:
             if p.date not in data_by_day:
                 data_by_day[p.date] = dict(
-                    data=p.date,
-                    summary={},
+                    date=p.date.strftime('%Y%m%d'),
                     segments=[]
                 )
-            # for activity in p.data['activities']:
-            #     if activity not in data_by_day[p.date]['summary']:
-            #         data_by_day[p.date]['summary']['activity'] = dict(
-            #         )
             data_by_day[p.date]['segments'].append(p.data)
 
         response = []
         for day in data_by_day:
+            data_by_day[day]['summary'] = self.calculate_summary(data_by_day[day]['segments'])
             response.append(data_by_day[day])
-
         return response
 
-    def get_activities_past_days(self, user, days_past):
-        return self.get_data('activities', user.data_profiles.get(provider=self.name), pastDays=days_past)
+    def calculate_summary(self, segments):
+        summary = {}
+        for segment in segments:
+            if 'activities' in segment:
+                for activity in segment['activities']:
+                    if activity['activity'] not in summary:
+                        summary[activity['activity']] = dict(
+                            activity=activity['activity'],
+                            group=activity['group'],
+                            duration=activity['duration'],
+                            distance=activity['distance']
+                        )
+                        if 'steps' in activity:
+                            summary[activity['activity']]['steps'] = activity['steps']
+                    else:
+                        summary[activity['activity']]['duration'] += activity['duration']
+                        summary[activity['activity']]['distance'] += activity['distance']
+                        if 'steps' in activity:
+                            summary[activity['activity']]['steps'] += activity['steps']
+
+        response = []
+        for activity_name in summary:
+            response.append(summary[activity_name])
+        return response
 
     def get_summary_past_days(self, user, days_past):
-        return self.get_data('summary', user.data_profiles.get(provider=self.name), pastDays=days_past)
+        return self.get_data_points_past_days(user, days_past=days_past)
 
-    def get_summary_month(self, user, year_month):
-        return self.get_data('summary', user.data_profiles.get(provider=self.name), date=year_month)
-
-    def get_storyline_past_days(self, user, days_past):
-        return self.get_data(data_type='storyline', moves_profile=user.data_profiles.get(provider=self.name), pastDays=days_past, trackPoints='true')
+    def get_summary_month(self, user, month_as_date):
+        return self.get_data_points_month(user, date=month_as_date)
 
     def get_storyline_date(self, user, date):
         return self.get_data_points_date(user, date)

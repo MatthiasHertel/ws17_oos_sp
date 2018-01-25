@@ -165,7 +165,7 @@ def month(request, date):
     selMonth = get_month_name(date)
     selYear = get_year_name(date)
 
-    summary = moves_service.get_summary_month(user, date)
+    summary = moves_service.get_summary_month(user, make_date_from(date))
     summary.reverse()
     for day in summary:
         day['dateObj'] = make_date_from(day['date'])
@@ -242,11 +242,13 @@ def make_date_from(yyyymmdd):
 
     year = int(str(yyyymmdd)[0:4])
     month = int(str(yyyymmdd)[4:6])
-    day = int(str(yyyymmdd)[6:8])
+    try:
+        day = int(str(yyyymmdd)[6:8])
+    except:
+        day = 1
 
     re = date(year, month, day)
     return re
-
 
 def get_month_name(yyyymm):
     month = int(str(yyyymm)[4:6])
