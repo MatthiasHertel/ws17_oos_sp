@@ -22,7 +22,6 @@ logger = logging.getLogger(__name__)
 import requests
 import json
 
-
 class UserDetailView(LoginRequiredMixin, DetailView):
     model = User
     # These next two lines tell the view to index lookups by username

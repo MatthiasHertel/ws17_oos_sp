@@ -1,5 +1,6 @@
 from django.conf.urls import url
-# from django.urls import path
+from channels.routing import route
+from .channels.consumers import ws_message
 
 from . import views
 
@@ -42,6 +43,9 @@ urlpatterns = [
     ),
     url(regex=r'^map/(?P<date>\d{4}-\d{2}-\d{2})/$', view=views.map, name='map'),
     url(regex=r'^geojson/(?P<date>\d{4}-\d{2}-\d{2})/$', view=views.geojson, name='geojson'),
+]
 
-
+channel_routing = [
+    # route("http.request", "django_playground.users.views.http_consumer"),
+    route("websocket.receive", ws_message)
 ]

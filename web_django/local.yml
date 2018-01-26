@@ -48,6 +48,14 @@ services:
    #   - postgres
     restart: unless-stopped
 
+  redis:
+      build:
+        context: .
+        dockerfile: ./compose/production/redis/Dockerfile
+      ports:
+        - "6379:6379"
+      restart: unless-stopped
+
   localtunnel:
     image: efrecon/localtunnel
     links:

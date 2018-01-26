@@ -7,4 +7,5 @@ set -o xtrace
 
 
 python manage.py migrate
-python manage.py runserver_plus 0.0.0.0:8000
+daphne config.asgi:channel_layer --port 8000 --bind 0.0.0.0
+python manage.py runworker --settings=config.settings.local
