@@ -1,6 +1,9 @@
 from django.conf.urls import url
 from channels.routing import route
-from .channels.consumers import ws_message
+from .channels.consumers import ws_connect
+from .channels.consumers import ws_disconnect
+from .channels.consumers import hello
+from .channels.consumers import import_data
 
 from . import views
 
@@ -47,5 +50,8 @@ urlpatterns = [
 
 channel_routing = [
     # route("http.request", "django_playground.users.views.http_consumer"),
-    route("websocket.receive", ws_message)
+    route("websocket.connect", ws_connect),
+    route("websocket.disconnect", ws_disconnect),
+    route('background-hello', hello),
+    route('background-import-data', import_data),
 ]

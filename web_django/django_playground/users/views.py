@@ -20,7 +20,7 @@ from dateutil.relativedelta import relativedelta
 import logging
 logger = logging.getLogger(__name__)
 import requests
-import json
+from channels import Channel
 
 class UserDetailView(LoginRequiredMixin, DetailView):
     model = User
@@ -90,7 +90,11 @@ class UserMovesImportView(LoginRequiredMixin, SingleObjectMixin, View):
         user = User.objects.get(username=request.user.username)
         if moves_service.is_user_authenticated(user):
             try:
-                moves_service.import_storyline(user)
+                # moves_service.import_storyline(user)
+                Channel('background-import-data').send(dict(
+                    provider='moves',
+                    user_id=user.id
+                ))
                 return redirect('users:detail', username=user.username)
             except Exception as e:
                 return HttpResponse(e.msg, 400)
@@ -117,7 +121,6 @@ def list(request):
     user = User.objects.get(username=request.user.username)
 
     summary = moves_service.get_summary_past_days(user, 30)
-    summary.reverse()
 
     for day in summary:
         day['dateObj'] = make_date_from(day['date'])

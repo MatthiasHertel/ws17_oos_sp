@@ -43,10 +43,18 @@ class MovesService:
                 filters += '{}={}&'.format(param, kwargs[param])
 
         url = '{}/user/{}/daily{}?{}'.format(self.config['api'], data_type, date, filters)
-        r = requests.get(url, headers=self.get_headers(moves_profile))
         print('MOVES API Request: {}'.format(url))
-        print('MOVES API Response: {}'.format(r.text))
-        return r.json()
+        r = None
+        try:
+            r = requests.get(url, headers=self.get_headers(moves_profile))
+        except Exception as e:
+            raise Exception('MOVES API ERROR: {}'.format(r.text))
+
+        try:
+            # print('MOVES API Response: {}'.format(r.text))
+            return r.json()
+        except ValueError:
+            raise ValueError('MOVES API Response did not contain JSON: {}'.format(r.text))
 
     def get_data_points_month(self, user, date):
         first_dat, num_days = monthrange(date.year, date.month)
@@ -72,7 +80,7 @@ class MovesService:
         data_points = moves_profile.data_points.filter(
             date__gte=from_date,
             date__lte=to_date
-        )
+        ).order_by('date')
         return self.transform_data_points(data_points)
 
     def transform_data_points(self, data_points):
@@ -128,7 +136,10 @@ class MovesService:
     def import_storyline(self, user):
         moves_profile = user.data_profiles.get(provider=self.name)
         if 'profile' in moves_profile.data:
-            next_date = self.create_date(moves_profile.data['profile']['firstDate'])
+            if moves_profile.data_points.exists():
+                next_date = moves_profile.data_points.latest('date').date - timedelta(days=1)
+            else:
+                next_date = self.create_date(moves_profile.data['profile']['firstDate'])
             current_date = datetime.now() + timedelta(days=1)
             import_done = False
             while not import_done:
@@ -139,21 +150,28 @@ class MovesService:
 
     def import_storyline_date(self, user, date):
         moves_profile = user.data_profiles.get(provider=self.name)
-        storyline_data = self.get_data(data_type='storyline', moves_profile=moves_profile, date=date, trackPoints='true')
+        try:
+            storyline_data = self.get_data(data_type='storyline', moves_profile=moves_profile, date=date, trackPoints='true')
 
-        for day in storyline_data:
-            if 'segments' in day and day['segments']:
-                for segment in day['segments']:
-                    if not moves_profile.data_points.filter(
-                        date=self.create_date(day['date']),
-                        type=segment['type'],
-                        data__lastUpdate__contains=segment['lastUpdate']
-                    ):
-                        moves_profile.data_points.create(
+            for day in storyline_data:
+                if 'segments' in day and day['segments']:
+                    for segment in day['segments']:
+                        if not moves_profile.data_points.filter(
                             date=self.create_date(day['date']),
                             type=segment['type'],
-                            data=segment
-                        ).save()
+                            data__lastUpdate__contains=segment['lastUpdate']
+                        ):
+                            moves_profile.data_points.create(
+                                date=self.create_date(day['date']),
+                                type=segment['type'],
+                                data=segment
+                            )
+        except Exception as e:
+            if hasattr(e, 'message'):
+                print('Import ERROR {}'.format(e.message))
+            else:
+                print(e)
+
 
     def get_profile(self, moves_profile):
         url = '{}/user/profile'.format(self.config['api'])
