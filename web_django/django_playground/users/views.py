@@ -7,7 +7,12 @@ from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 import json
-import matplotlib.pyplot as plt
+
+
+#from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+
+#from matplotlib.figure import Figure
+
 
 from .models import User
 from .models import DataProfile
@@ -229,6 +234,7 @@ def get_dates_range(first_date):
 
     return days
 
+
 def get_days_using(first_date):
     first = make_date_from(first_date)
     now = datetime.utcnow().date()
@@ -343,3 +349,79 @@ def geojson_move(segment):
         features.append(geojson)
 
     return features
+
+
+######
+
+
+# import Figure and FigureCanvas, we will use API
+import matplotlib
+matplotlib.use('Agg')
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
+
+# used to generate the graph
+import numpy as np
+from PIL import Image
+
+def mplimage(request):
+    fig = plt.figure()
+    canvas = FigureCanvas(fig)
+
+    # do the plotting
+    N = 5
+    menMeans = (20, 35, 30, 35, 27)
+    womenMeans = (25, 32, 34, 20, 25)
+    menStd = (2, 3, 4, 1, 2)
+    womenStd = (3, 5, 2, 3, 3)
+    ind = np.arange(N)  # the x locations for the groups
+    width = 0.35  # the width of the bars: can also be len(x) sequence
+
+    p1 = plt.bar(ind, menMeans, width, yerr=menStd)
+    p2 = plt.bar(ind, womenMeans, width,
+                 bottom=menMeans, yerr=womenStd)
+
+    plt.ylabel('Scores')
+    plt.title('Scores by group and gender')
+    plt.xticks(ind, ('G1', 'G2', 'G3', 'G4', 'G5'))
+    plt.yticks(np.arange(0, 81, 10))
+    plt.legend((p1[0], p2[0]), ('Men', 'Women'))
+
+    # prepare the response, setting Content-Type
+    response=HttpResponse(content_type='image/png')
+    # print the image on the response
+    canvas.print_png(response)
+    # and return it
+    return response
+
+
+# def mplimage(request):
+#     fig = plt.figure()
+#     canvas = FigureCanvas(fig)
+#
+#     # do the plotting
+#     N = 5
+#     menMeans = (20, 35, 30, 35, 27)
+#     womenMeans = (25, 32, 34, 20, 25)
+#     menStd = (2, 3, 4, 1, 2)
+#     womenStd = (3, 5, 2, 3, 3)
+#     ind = np.arange(N)  # the x locations for the groups
+#     width = 0.35  # the width of the bars: can also be len(x) sequence
+#
+#     p1 = plt.bar(ind, menMeans, width, yerr=menStd)
+#     p2 = plt.bar(ind, womenMeans, width,
+#                  bottom=menMeans, yerr=womenStd)
+#
+#     plt.ylabel('Scores')
+#     plt.title('Scores by group and gender')
+#     plt.xticks(ind, ('G1', 'G2', 'G3', 'G4', 'G5'))
+#     plt.yticks(np.arange(0, 81, 10))
+#     plt.legend((p1[0], p2[0]), ('Men', 'Women'))
+#
+#     # prepare the response, setting Content-Type
+#     response=HttpResponse(content_type='image/png')
+#     # print the image on the response
+#     canvas.print_png(response)
+#     # and return it
+#     return response
