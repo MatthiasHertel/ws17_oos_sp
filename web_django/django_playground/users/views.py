@@ -360,13 +360,15 @@ def mpl_recent(request, date=None):
     fig = plt.figure()
     canvas = FigureCanvas(fig)
 
+
     # color map for coloring diagram-stuff
     # ref: https://matplotlib.org/examples/color/colormaps_reference.html
     color_list = plt.cm.tab10(np.linspace(0, 1, 12))
 
     user = User.objects.get(username=request.user.username)
     if date is not None:
-        summary = moves_service.get_summary_month(user, date)
+        adjust_date = make_date_from(date)
+        summary = moves_service.get_summary_month(user, adjust_date)
     else:
         summary = moves_service.get_summary_past_days(user, 30)
 
