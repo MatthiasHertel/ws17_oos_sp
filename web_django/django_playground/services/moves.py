@@ -1,7 +1,10 @@
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+
 import logging
 import requests
+from channels import Group
+from channels import Channel
 
 import json
 from datetime import datetime, timedelta
@@ -143,6 +146,12 @@ class MovesService:
             current_date = datetime.now() + timedelta(days=1)
             import_done = False
             while not import_done:
+
+                requests.post('http://127.0.0.1:8000/users/~notification', json=json.dumps(dict(
+                    user_id=user.id,
+                    message='Progress'
+                )))
+
                 self.import_storyline_date(user, next_date)
                 next_date = next_date + timedelta(days=1)
                 if next_date.strftime('%Y%m%d') == current_date.strftime('%Y%m%d'):

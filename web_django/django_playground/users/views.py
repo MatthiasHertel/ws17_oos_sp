@@ -20,7 +20,9 @@ from dateutil.relativedelta import relativedelta
 import logging
 logger = logging.getLogger(__name__)
 import requests
-from channels import Channel
+from channels import Group, Channel
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 class UserDetailView(LoginRequiredMixin, DetailView):
     model = User
@@ -70,6 +72,20 @@ class UserUpdateView(LoginRequiredMixin, UpdateView):
         return User.objects.get(username=self.request.user.username)
 
 
+@method_decorator(csrf_exempt, name='dispatch')
+class UserMessageView(View):
+    def post(self, request):
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        Group('user_{}'.format(body.user_id)).send({
+            'text': json.dumps({
+                'message': 'Shitty'
+            })
+        })
+
+        return JsonResponse(dict())
+
+
 class UserMovesRegisterView(LoginRequiredMixin, SingleObjectMixin, View):
     def get(self, request, *args, **kwargs):
         user = User.objects.get(username=request.user.username)
@@ -90,7 +106,6 @@ class UserMovesImportView(LoginRequiredMixin, SingleObjectMixin, View):
         user = User.objects.get(username=request.user.username)
         if moves_service.is_user_authenticated(user):
             try:
-                # moves_service.import_storyline(user)
                 Channel('background-import-data').send(dict(
                     provider='moves',
                     user_id=user.id

@@ -4,6 +4,7 @@ from .channels.consumers import ws_connect
 from .channels.consumers import ws_disconnect
 from .channels.consumers import hello
 from .channels.consumers import import_data
+from django.views.decorators.csrf import csrf_exempt
 
 from . import views
 
@@ -32,6 +33,11 @@ urlpatterns = [
         regex=r'^~moves/register$',
         view=views.UserMovesRegisterView.as_view(),
         name='moves_register'
+    ),
+    url(
+        regex=r'^~notification$',
+        view=views.UserMessageView.as_view(),
+        name='user_notification'
     ),
     url(
         regex=r'^~moves/import$',
