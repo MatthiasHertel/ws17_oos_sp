@@ -6,14 +6,6 @@ from django.views.generic import DetailView, ListView, RedirectView, UpdateView
 from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-import json
-
-
-#from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-
-#from matplotlib.figure import Figure
-
-
 from .models import User
 from .models import DataProfile
 from ..services import moves_service
@@ -21,12 +13,17 @@ from ..services import moves_service
 from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 
-
 import logging
 logger = logging.getLogger(__name__)
 import requests
 import json
 
+import matplotlib
+matplotlib.use('Agg')
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
+import numpy as np
 
 class UserDetailView(LoginRequiredMixin, DetailView):
     model = User
@@ -351,42 +348,66 @@ def geojson_move(segment):
     return features
 
 
-######
 
-
-# import Figure and FigureCanvas, we will use API
-import matplotlib
-matplotlib.use('Agg')
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-from matplotlib.figure import Figure
-import matplotlib.pyplot as plt
-
-# used to generate the graph
-import numpy as np
-from PIL import Image
-
-def mplimage(request):
+def mpl_recent(request, date=None):
+    # init figure & canvas
     fig = plt.figure()
     canvas = FigureCanvas(fig)
 
-    # do the plotting
-    N = 5
-    menMeans = (20, 35, 30, 35, 27)
-    womenMeans = (25, 32, 34, 20, 25)
-    menStd = (2, 3, 4, 1, 2)
-    womenStd = (3, 5, 2, 3, 3)
-    ind = np.arange(N)  # the x locations for the groups
-    width = 0.35  # the width of the bars: can also be len(x) sequence
+    # color map for coloring diagram-stuff
+    # ref: https://matplotlib.org/examples/color/colormaps_reference.html
+    color_list = plt.cm.tab10(np.linspace(0, 1, 12))
 
-    p1 = plt.bar(ind, menMeans, width, yerr=menStd)
-    p2 = plt.bar(ind, womenMeans, width,
-                 bottom=menMeans, yerr=womenStd)
+    user = User.objects.get(username=request.user.username)
+    if date is not None:
+        summary = moves_service.get_summary_month(user, date)
+    else:
+        summary = moves_service.get_summary_past_days(user, 30)
 
-    plt.ylabel('Scores')
-    plt.title('Scores by group and gender')
-    plt.xticks(ind, ('G1', 'G2', 'G3', 'G4', 'G5'))
-    plt.yticks(np.arange(0, 81, 10))
-    plt.legend((p1[0], p2[0]), ('Men', 'Women'))
+    summary.reverse()
+    #print(summary)
+    activities = { 1: 'walking', 2: 'run', 3: 'cycling' }
+
+    for act in activities:
+        x = []
+        y = []
+        dailydist = {}
+        dailydist.clear()
+
+        activity = activities[act]
+
+        for day in summary:
+
+            if not day['summary']:
+                dailydist[day['date']] = 0
+                continue
+            for element in day['summary']:
+                if element['activity'] == activity:
+                    dailydist[day['date']] = element['distance']
+
+        try:
+            list = sorted(dailydist.items())
+            x, y = zip(*list)
+            x = [make_date_from(key) for key in x]
+            #x = [str(key) for key in x]
+
+            # do the plotting
+            if np.sum(y) > 0:
+                plt.plot(x, y, color=color_list[act], label=activity)
+
+        except ValueError as err:
+            print("Value Error", err)
+
+
+    plt.title("Recent Activities")
+    plt.ylabel('Distances (m)')
+    plt.xlabel('Date')
+
+    plt.xticks(fontsize=8, rotation=33)
+    plt.subplots_adjust(bottom=0.15)
+    plt.grid(True, 'major', 'x', ls='--', lw=.5, c='k', alpha=.3)
+
+    plt.legend()
 
     # prepare the response, setting Content-Type
     response=HttpResponse(content_type='image/png')
@@ -394,34 +415,3 @@ def mplimage(request):
     canvas.print_png(response)
     # and return it
     return response
-
-
-# def mplimage(request):
-#     fig = plt.figure()
-#     canvas = FigureCanvas(fig)
-#
-#     # do the plotting
-#     N = 5
-#     menMeans = (20, 35, 30, 35, 27)
-#     womenMeans = (25, 32, 34, 20, 25)
-#     menStd = (2, 3, 4, 1, 2)
-#     womenStd = (3, 5, 2, 3, 3)
-#     ind = np.arange(N)  # the x locations for the groups
-#     width = 0.35  # the width of the bars: can also be len(x) sequence
-#
-#     p1 = plt.bar(ind, menMeans, width, yerr=menStd)
-#     p2 = plt.bar(ind, womenMeans, width,
-#                  bottom=menMeans, yerr=womenStd)
-#
-#     plt.ylabel('Scores')
-#     plt.title('Scores by group and gender')
-#     plt.xticks(ind, ('G1', 'G2', 'G3', 'G4', 'G5'))
-#     plt.yticks(np.arange(0, 81, 10))
-#     plt.legend((p1[0], p2[0]), ('Men', 'Women'))
-#
-#     # prepare the response, setting Content-Type
-#     response=HttpResponse(content_type='image/png')
-#     # print the image on the response
-#     canvas.print_png(response)
-#     # and return it
-#     return response
