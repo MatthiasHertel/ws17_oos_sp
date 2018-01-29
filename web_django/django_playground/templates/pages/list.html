@@ -10,11 +10,12 @@
 <pre>
   {{ profile }}
 </pre> -->
-  <a href="mplimage.png">Testing</a>
-  <img src="mplimage.png" />
 <p>Hi. You've been using Moves for {{ days }} days. (Click on a date to see a map.)</p>
 
 <h2>last 30 days</h2>
+
+    <img src="mpl_recent.png" />
+
 <table>{% for day in summary %}
   <tr>
   <td>
@@ -36,6 +37,7 @@
             <a href="month/{{ month|date:'Ym' }}">{{ month|date:"M Y" }}</a><br>
         {% endfor %}
     </p>
+
 
 
 {% endblock content %}

@@ -43,6 +43,8 @@ urlpatterns = [
     url(regex=r'^map/(?P<date>\d{4}-\d{2}-\d{2})/$', view=views.map, name='map'),
     url(regex=r'^geojson/(?P<date>\d{4}-\d{2}-\d{2})/$', view=views.geojson, name='geojson'),
     url(regex=r'^mplimage.png$', view=views.mplimage, name='mplimage'),
+    url(regex=r'^mpl_recent.png/(?P<date>\d{4}\d{2})/$', view=views.mpl_recent, name='mplimage'),
+    url(regex=r'^mpl_recent.png$', view=views.mpl_recent, name='mpl_recent'),
 ]
 
 channel_routing = [
