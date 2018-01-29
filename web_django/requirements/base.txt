@@ -48,4 +48,9 @@ redis>=2.10.5
 # Your custom requirements go here
 requests==2.18.4
 matplotlib==2.1.1
+<<<<<<< HEAD
 numpy==1.14.0
+=======
+channels==1.1.8
+asgi-redis==1.4.3
+>>>>>>> e6547d981ca791cb41a2efcff7721d0bcb62a917

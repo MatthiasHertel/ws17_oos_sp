@@ -3,8 +3,9 @@ from django.core.exceptions import ObjectDoesNotExist
 import logging
 import requests
 
-from ..users.models import DataProfile, DataPoint
+import json
 from datetime import datetime, timedelta
+from calendar import monthrange
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -35,39 +36,110 @@ class MovesService:
         date = ''
 
         if 'date' in kwargs:
-            # date = '/' + kwargs['date'].strftime('%Y%m%d')
-            date = '/' + kwargs['date']
+            date = '/' + kwargs['date'].strftime('%Y%m%d')
 
         for param in kwargs:
             if param != 'date':
                 filters += '{}={}&'.format(param, kwargs[param])
 
         url = '{}/user/{}/daily{}?{}'.format(self.config['api'], data_type, date, filters)
-        print(url)
-        r = requests.get(url, headers=self.get_headers(moves_profile))
         print('MOVES API Request: {}'.format(url))
-        print('MOVES API Response: {}'.format(r.text))
-        return r.json()
+        r = None
+        try:
+            r = requests.get(url, headers=self.get_headers(moves_profile))
+        except Exception as e:
+            raise Exception('MOVES API ERROR: {}'.format(r.text))
 
-    def get_activities_past_days(self, user, days_past):
-        return self.get_data('activities', user.data_profiles.get(provider=self.name), pastDays=days_past)
+        try:
+            # print('MOVES API Response: {}'.format(r.text))
+            return r.json()
+        except ValueError:
+            raise ValueError('MOVES API Response did not contain JSON: {}'.format(r.text))
+
+    def get_data_points_month(self, user, date):
+        first_dat, num_days = monthrange(date.year, date.month)
+        moves_profile = user.data_profiles.get(provider=self.name)
+        to_date = date + timedelta(days=num_days)
+        data_points = moves_profile.data_points.filter(
+            date__gte=date,
+            date__lte=to_date
+        )
+        return self.transform_data_points(data_points)
+
+    def get_data_points_date(self, user, date):
+        moves_profile = user.data_profiles.get(provider=self.name)
+        data_points = moves_profile.data_points.filter(
+            date=date
+        )
+        return self.transform_data_points(data_points)
+
+    def get_data_points_past_days(self, user, days_past):
+        moves_profile = user.data_profiles.get(provider=self.name)
+        to_date = moves_profile.data_points.latest('date').date
+        from_date = to_date - timedelta(days=days_past)
+        data_points = moves_profile.data_points.filter(
+            date__gte=from_date,
+            date__lte=to_date
+        ).order_by('date')
+        return self.transform_data_points(data_points)
+
+    def transform_data_points(self, data_points):
+        data_by_day = dict()
+        for p in data_points:
+            if p.date not in data_by_day:
+                data_by_day[p.date] = dict(
+                    date=p.date.strftime('%Y%m%d'),
+                    segments=[]
+                )
+            data_by_day[p.date]['segments'].append(p.data)
+
+        response = []
+        for day in data_by_day:
+            data_by_day[day]['summary'] = self.calculate_summary(data_by_day[day]['segments'])
+            response.append(data_by_day[day])
+        return response
+
+    def calculate_summary(self, segments):
+        summary = {}
+        for segment in segments:
+            if 'activities' in segment:
+                for activity in segment['activities']:
+                    if activity['activity'] not in summary:
+                        summary[activity['activity']] = dict(
+                            activity=activity['activity'],
+                            group=activity['group'],
+                            duration=activity['duration'],
+                            distance=activity['distance']
+                        )
+                        if 'steps' in activity:
+                            summary[activity['activity']]['steps'] = activity['steps']
+                    else:
+                        summary[activity['activity']]['duration'] += activity['duration']
+                        summary[activity['activity']]['distance'] += activity['distance']
+                        if 'steps' in activity:
+                            summary[activity['activity']]['steps'] += activity['steps']
+
+        response = []
+        for activity_name in summary:
+            response.append(summary[activity_name])
+        return response
 
     def get_summary_past_days(self, user, days_past):
-        return self.get_data('summary', user.data_profiles.get(provider=self.name), pastDays=days_past)
+        return self.get_data_points_past_days(user, days_past=days_past)
 
-    def get_summary_month(self, user, year_month):
-        return self.get_data('summary', user.data_profiles.get(provider=self.name), date=year_month)
-
-    def get_storyline_past_days(self, user, days_past):
-        return self.get_data(data_type='storyline', moves_profile=user.data_profiles.get(provider=self.name), pastDays=days_past, trackPoints='true')
+    def get_summary_month(self, user, month_as_date):
+        return self.get_data_points_month(user, date=month_as_date)
 
     def get_storyline_date(self, user, date):
-        return self.get_data(data_type='storyline', moves_profile=user.data_profiles.get(provider=self.name), date=date, trackPoints='true')
+        return self.get_data_points_date(user, date)
 
     def import_storyline(self, user):
         moves_profile = user.data_profiles.get(provider=self.name)
         if 'profile' in moves_profile.data:
-            next_date = self.create_date(moves_profile.data['profile']['firstDate'])
+            if moves_profile.data_points.exists():
+                next_date = moves_profile.data_points.latest('date').date - timedelta(days=1)
+            else:
+                next_date = self.create_date(moves_profile.data['profile']['firstDate'])
             current_date = datetime.now() + timedelta(days=1)
             import_done = False
             while not import_done:
@@ -78,21 +150,28 @@ class MovesService:
 
     def import_storyline_date(self, user, date):
         moves_profile = user.data_profiles.get(provider=self.name)
-        storyline_data = self.get_data(data_type='storyline', moves_profile=moves_profile, date=date, trackPoints='true')
+        try:
+            storyline_data = self.get_data(data_type='storyline', moves_profile=moves_profile, date=date, trackPoints='true')
 
-        for day in storyline_data:
-            if 'segments' in day and day['segments']:
-                for segment in day['segments']:
-                    if not moves_profile.data_points.filter(
-                        date=self.create_date(day['date']),
-                        type=segment['type'],
-                        data__lastUpdate__contains=segment['lastUpdate']
-                    ):
-                        moves_profile.data_points.create(
+            for day in storyline_data:
+                if 'segments' in day and day['segments']:
+                    for segment in day['segments']:
+                        if not moves_profile.data_points.filter(
                             date=self.create_date(day['date']),
                             type=segment['type'],
-                            data=segment
-                        ).save()
+                            data__lastUpdate__contains=segment['lastUpdate']
+                        ):
+                            moves_profile.data_points.create(
+                                date=self.create_date(day['date']),
+                                type=segment['type'],
+                                data=segment
+                            )
+        except Exception as e:
+            if hasattr(e, 'message'):
+                print('Import ERROR {}'.format(e.message))
+            else:
+                print(e)
+
 
     def get_profile(self, moves_profile):
         url = '{}/user/profile'.format(self.config['api'])

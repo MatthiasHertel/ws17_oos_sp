@@ -49,6 +49,7 @@ THIRD_PARTY_APPS = [
     'allauth',  # registration
     'allauth.account',  # registration
     'allauth.socialaccount',  # registration
+    'channels',
 ]
 
 # Apps specific for this project go here.
@@ -281,4 +282,15 @@ MOVES = {
     'client_secret': env('CLIENT_SECRET'),
     'api_auth': env('API_AUTH'),
     'api': env('API')
+}
+
+# In settings.py
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "asgi_redis.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": ['redis://redis:6379'],
+        },
+        "ROUTING": "django_playground.users.urls.channel_routing",
+    },
 }

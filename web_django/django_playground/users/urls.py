@@ -1,5 +1,11 @@
 from django.conf.urls import include, url
 # from django.urls import path
+from django.conf.urls import url
+from channels.routing import route
+from .channels.consumers import ws_connect
+from .channels.consumers import ws_disconnect
+from .channels.consumers import hello
+from .channels.consumers import import_data
 
 from . import views
 
@@ -40,6 +46,12 @@ urlpatterns = [
     url(regex=r'^geojson/(?P<date>\d{4}-\d{2}-\d{2})/$', view=views.geojson, name='geojson'),
     url(regex=r'^mpl_recent.png/(?P<date>\d{4}\d{2})/$', view=views.mpl_recent, name='mplimage'),
     url(regex=r'^mpl_recent.png$', view=views.mpl_recent, name='mpl_recent'),
+]
 
-
+channel_routing = [
+    # route("http.request", "django_playground.users.views.http_consumer"),
+    route("websocket.connect", ws_connect),
+    route("websocket.disconnect", ws_disconnect),
+    route('background-hello', hello),
+    route('background-import-data', import_data),
 ]
