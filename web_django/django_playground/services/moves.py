@@ -4,8 +4,10 @@ import logging
 import requests
 
 import json
+import sys
 import math
 from datetime import datetime, timedelta
+from operator import itemgetter, attrgetter
 from calendar import monthrange
 
 # Get an instance of a logger
@@ -82,6 +84,7 @@ class MovesService:
             date__gte=from_date,
             date__lte=to_date
         ).order_by('date')
+        # TODO die ausgabe ist nicht deterministisch heisst das order by oben ist nutzlos durch den aufruf von transform_data_points
         return self.transform_data_points(data_points)
 
     def transform_data_points(self, data_points):
@@ -102,7 +105,8 @@ class MovesService:
         for day in data_by_day:
             data_by_day[day]['summary'] = self.calculate_summary(data_by_day[day]['segments'])
             response.append(data_by_day[day])
-        return response
+        print(json.dumps(response))
+        return sorted(response, key=itemgetter("date"), reverse=True)
 
     def calculate_distances(self, data_point):
         # Haversine formula:a = sin²(Δφ/2) + cos φ1 ⋅ cos φ2 ⋅ sin²(Δλ/2)
