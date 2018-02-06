@@ -120,6 +120,7 @@ class MovesService:
                     lastLat = None
                     lastLon = None
                     lastTime = None
+
                     for track_point in activity['trackPoints']:
                         if not lastLat and not lastLon:
                             lastLat = track_point['lat']
@@ -137,19 +138,19 @@ class MovesService:
                             a = math.sin(latDistance/2) * math.sin(latDistance/2) + math.cos(lat1Radians) * math.cos(lat2Radians) * math.sin(lonDistance/2) * math.sin(lonDistance/2)
                             c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
                             d = R * c
+
                             seconds = (currentTime-lastTime).total_seconds()
-                            meters_per_second= d/seconds
-                            meters_per_hour = meters_per_second*60*60
-                            km_per_hour = meters_per_hour / 1000
+                            if seconds > 0:
+                                meters_per_second= d/seconds
+                                meters_per_hour = meters_per_second*60*60
+                                km_per_hour = meters_per_hour / 1000
+                                track_point['speed'] = meters_per_second
+                                track_point['speed_kmh'] = km_per_hour
+                                track_point['distance'] = d
 
                             lastLat = currentLat
                             lastLon = currentLon
                             lastTime = currentTime
-
-                            track_point['speed'] = meters_per_second
-                            track_point['speed_kmh'] = km_per_hour
-                            track_point['distance'] = d
-
         return data_point
 
     def calculate_summary(self, segments):
