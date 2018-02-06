@@ -4,6 +4,7 @@ import logging
 import requests
 
 import json
+import math
 from datetime import datetime, timedelta
 from calendar import monthrange
 
@@ -91,6 +92,10 @@ class MovesService:
                     date=p.date.strftime('%Y%m%d'),
                     segments=[]
                 )
+
+            if p.type == 'move':
+                p.data = self.calculate_distances(p.data)
+
             data_by_day[p.date]['segments'].append(p.data)
 
         response = []
@@ -98,6 +103,62 @@ class MovesService:
             data_by_day[day]['summary'] = self.calculate_summary(data_by_day[day]['segments'])
             response.append(data_by_day[day])
         return response
+
+    def calculate_distances(self, data_point):
+        # Haversine formula:a = sin²(Δφ/2) + cos φ1 ⋅ cos φ2 ⋅ sin²(Δλ/2)
+        # c = 2 ⋅ atan2( √a, √(1−a) )
+        # d = R ⋅ c
+        # where	φ is latitude, λ is longitude, R is earth’s radius (mean radius = 6,371km);
+        # note that angles need to be in radians to pass to trig functions!
+
+        # var R = 6371e3; // metres
+        # var φ1 = lat1.toRadians();
+        # var φ2 = lat2.toRadians();
+        # var Δφ = (lat2-lat1).toRadians();
+        # var Δλ = (lon2-lon1).toRadians();
+        #
+        # var a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+        # Math.cos(φ1) * Math.cos(φ2) *
+        # Math.sin(Δλ/2) * Math.sin(Δλ/2);
+        # var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        #
+        # var d = R * c;
+        R = 6371e3
+        if 'activities' in data_point:
+            for activity in data_point['activities']:
+                print(activity['group'])
+                if 'trackPoints' in activity:
+                    lastLat = None
+                    lastLon = None
+                    lastTime = None
+                    for track_point in activity['trackPoints']:
+                        if not lastLat and not lastLon:
+                            lastLat = track_point['lat']
+                            lastLon = track_point['lon']
+                            lastTime = self.create_date(track_point['time'])
+                        else:
+                            currentLat = track_point['lat']
+                            currentLon = track_point['lon']
+                            currentTime = self.create_date(track_point['time'])
+                            lat1Radians = math.radians(lastLat)
+                            lat2Radians = math.radians(currentLat)
+                            latDistance = math.radians(currentLat-lastLat)
+                            lonDistance = math.radians(currentLon-lastLon)
+
+                            a = math.sin(latDistance/2) * math.sin(latDistance/2) + math.cos(lat1Radians) * math.cos(lat2Radians) * math.sin(lonDistance/2) * math.sin(lonDistance/2)
+                            c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+                            d = R * c
+                            seconds = (currentTime-lastTime).total_seconds()
+                            meters_per_second= d/seconds
+                            meters_per_hour = meters_per_second*60*60
+                            km_per_hour = meters_per_hour / 1000
+
+                            lastLat = currentLat
+                            lastLon = currentLon
+                            lastTime = currentTime
+
+                            print('Distance: {} - Seconds {} - KmH {}'.format(d, seconds, km_per_hour))
+        return data_point
 
     def calculate_summary(self, segments):
         summary = {}
