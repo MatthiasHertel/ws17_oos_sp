@@ -110,23 +110,9 @@ class MovesService:
         # d = R ⋅ c
         # where	φ is latitude, λ is longitude, R is earth’s radius (mean radius = 6,371km);
         # note that angles need to be in radians to pass to trig functions!
-
-        # var R = 6371e3; // metres
-        # var φ1 = lat1.toRadians();
-        # var φ2 = lat2.toRadians();
-        # var Δφ = (lat2-lat1).toRadians();
-        # var Δλ = (lon2-lon1).toRadians();
-        #
-        # var a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
-        # Math.cos(φ1) * Math.cos(φ2) *
-        # Math.sin(Δλ/2) * Math.sin(Δλ/2);
-        # var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        #
-        # var d = R * c;
         R = 6371e3
         if 'activities' in data_point:
             for activity in data_point['activities']:
-                print(activity['group'])
                 if 'trackPoints' in activity:
                     lastLat = None
                     lastLon = None
@@ -157,7 +143,10 @@ class MovesService:
                             lastLon = currentLon
                             lastTime = currentTime
 
-                            print('Distance: {} - Seconds {} - KmH {}'.format(d, seconds, km_per_hour))
+                            track_point['speed'] = meters_per_second
+                            track_point['speed_kmh'] = km_per_hour
+                            track_point['distance'] = d
+
         return data_point
 
     def calculate_summary(self, segments):
