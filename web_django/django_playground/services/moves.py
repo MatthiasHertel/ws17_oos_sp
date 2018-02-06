@@ -105,7 +105,6 @@ class MovesService:
         for day in data_by_day:
             data_by_day[day]['summary'] = self.calculate_summary(data_by_day[day]['segments'])
             response.append(data_by_day[day])
-        print(json.dumps(response))
         return sorted(response, key=itemgetter("date"), reverse=True)
 
     def calculate_distances(self, data_point):
