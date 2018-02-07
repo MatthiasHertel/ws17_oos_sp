@@ -143,6 +143,9 @@ class UserActivityMonthView(LoginRequiredMixin, View):
     def get(self, request, date, *args, **kwargs):
         user = User.objects.get(username=request.user.username)
 
+        # cleanup date first
+        date = date.replace('/','')
+
         # get selected month-name & year for month-view
         selMonth = utils_service.get_month_name(date)
         selYear = utils_service.get_year_name(date)

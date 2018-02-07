@@ -39,12 +39,12 @@ urlpatterns = [
         name='moves_import'
     ),
     url(
-        regex='list',
+        regex=r'^moves-data$',
         view=views.UserActivityListView.as_view(),
         name='list'
     ),
     url(
-        regex=r'^month/(?P<date>\d{4}\d{2})/$',
+        regex=r'^moves-data/(?P<date>\d{4}\/\d{2})/$',
         view=views.UserActivityMonthView.as_view(),
         name='month'
     ),

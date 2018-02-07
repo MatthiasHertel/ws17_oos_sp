@@ -22,7 +22,7 @@
       </a>
       <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
         {% for month in months %}
-                <a class="dropdown-item" href="month/{{ month|date:'Ym' }}">{{ month|date:"M Y" }}</a>
+                <a class="dropdown-item" href="moves-data/{{ month|date:'Y' }}/{{ month|date:'m' }}">{{ month|date:"M Y" }}</a>
         {% endfor %}
       </div>
     </div>
