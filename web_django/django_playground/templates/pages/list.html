@@ -33,9 +33,10 @@
     {% endfor %}</table>
 
 <hr>
-    <p>{% for month in months %}
-            <a href="month/{{ month|date:'Ym' }}">{{ month|date:"M Y" }}</a><br>
-        {% endfor %}
+    <p>
+      {% for month in months %}
+        <a href="{% url 'users:month' date=month|date:'Ym' %}">{{ month|date:"M Y" }}</a><br>
+      {% endfor %}
     </p>
 
 

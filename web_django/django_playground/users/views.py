@@ -113,35 +113,60 @@ class UserListView(LoginRequiredMixin, ListView):
     slug_url_kwarg = 'username'
 
 
-def map(request, date):
+class UserActivityListView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        user = User.objects.get(username=request.user.username)
+        summary = moves_service.get_summary_past_days(user, 30)
 
-    return render(request, 'pages/map.html', {
-        'date':date
-        })
+        for day in summary:
+            day['dateObj'] = make_date_from(day['date'])
+            day['summary'] = make_summaries(day)
 
+        moves_profile = user.data_profiles.get(provider='moves')
+        using_for = get_days_using(moves_profile.data['profile']['firstDate'])
+        months = get_month_range(moves_profile.data['profile']['firstDate'])
 
-def list(request):
-
-    user = User.objects.get(username=request.user.username)
-
-    summary = moves_service.get_summary_past_days(user, 30)
-
-    for day in summary:
-        day['dateObj'] = make_date_from(day['date'])
-        day['summary'] = make_summaries(day)
-
-    moves_profile = user.data_profiles.get(provider='moves')
-    using_for = get_days_using(moves_profile.data['profile']['firstDate'])
-    months = get_month_range(moves_profile.data['profile']['firstDate'])
-
-    return render(request, 'pages/list.html', {
+        return render(request, 'pages/list.html', {
             'user': user,
             'profile': json.dumps(moves_profile.data, indent=2),
             'summary': summary,
             'days': using_for,
             'months': months
-    })
+        })
 
+
+class UserActivityMonthView(LoginRequiredMixin, View):
+    def get(self, request, date, *args, **kwargs):
+        user = User.objects.get(username=request.user.username)
+
+        # get selected month-name & year for month-view
+        selMonth = get_month_name(date)
+        selYear = get_year_name(date)
+
+        summary = moves_service.get_summary_month(user, make_date_from(date))
+        summary.reverse()
+        for day in summary:
+            day['dateObj'] = make_date_from(day['date'])
+            day['summary'] = make_summaries(day)
+
+        moves_profile = user.data_profiles.get(provider='moves')
+        months = get_month_range(moves_profile.data['profile']['firstDate'])
+
+        return render(request, 'pages/month.html', {
+            'user': user,
+            'profile': json.dumps(moves_profile.data, indent=2),
+            'summary': summary,
+            'months': months,
+            'date' : date,
+            'sel_month': selMonth,
+            'sel_year' : selYear
+        })
+
+
+def map(request, date):
+    return render(request, 'pages/map.html', {
+        'date':date
+        })
 
 def geojson(request, date):
     api_date = date.replace('-', '')
@@ -161,34 +186,6 @@ def geojson(request, date):
     filename = "moves-%s.geojson" % date
     # headers = (('Content-Disposition', 'attachment; filename="%s"' % filename),)
     return HttpResponse(json.dumps(geojson),  content_type='application/geo+json')
-
-
-def month(request, date):
-
-    user = User.objects.get(username=request.user.username)
-
-    # get selected month-name & year for month-view
-    selMonth = get_month_name(date)
-    selYear = get_year_name(date)
-
-    summary = moves_service.get_summary_month(user, make_date_from(date))
-    summary.reverse()
-    for day in summary:
-        day['dateObj'] = make_date_from(day['date'])
-        day['summary'] = make_summaries(day)
-
-    moves_profile = user.data_profiles.get(provider='moves')
-    months = get_month_range(moves_profile.data['profile']['firstDate'])
-
-    return render(request, 'pages/month.html', {
-            'user': user,
-            'profile': json.dumps(moves_profile.data, indent=2),
-            'summary': summary,
-            'months': months,
-            'date' : date,
-            'sel_month': selMonth,
-            'sel_year' : selYear
-    })
 
 
 def validate_date(date):

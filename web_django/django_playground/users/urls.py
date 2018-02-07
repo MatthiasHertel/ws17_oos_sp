@@ -38,8 +38,16 @@ urlpatterns = [
         view=views.UserMovesImportView.as_view(),
         name='moves_import'
     ),
-    url('list', views.list, name='list'),
-    url(regex=r'^month/(?P<date>\d{4}\d{2})/$', view=views.month, name='month'),
+    url(
+        regex='list',
+        view=views.UserActivityListView.as_view(),
+        name='list'
+    ),
+    url(
+        regex=r'^month/(?P<date>\d{4}\d{2})/$',
+        view=views.UserActivityMonthView.as_view(),
+        name='month'
+    ),
     url(regex=r'^map/(?P<date>\d{4}-\d{2}-\d{2})/$', view=views.map, name='map'),
     url(regex=r'^geojson/(?P<date>\d{4}-\d{2}-\d{2})/$', view=views.geojson, name='geojson'),
     url(regex=r'^mpl_recent.png/(?P<date>\d{4}\d{2})/$', view=views.mpl_recent, name='mplimage'),
@@ -47,9 +55,5 @@ urlpatterns = [
 ]
 
 channel_routing = [
-    # route("http.request", "django_playground.users.views.http_consumer"),
-    route("websocket.connect", ws_connect),
-    route("websocket.disconnect", ws_disconnect),
-    route('background-hello', hello),
     route('background-import-data', import_data),
 ]
