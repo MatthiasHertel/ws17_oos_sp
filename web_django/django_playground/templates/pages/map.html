@@ -34,6 +34,61 @@
       <div id='map'></div>
     </div>
   </div>
+  <div class="row">
+    <!-- overview table -->
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <strong>Daily Activities</strong>
+        </div>
+        <div class="card">
+          <br>
+          <table id="table_id" class="table table-striped table-bordered" style="width:100%">
+            <thead>
+            <tr>
+              <th>Type</th>
+              <th>Distance</th>
+              <th>Calories</th>
+              <th>Duration</th>
+              <th>Start</th>
+              <th>End</th>
+              <th>Details</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for type, activities in activities_map.items %}
+            {% for activity in activities %}
+              <tr>
+                <td>
+                  {{ activity.group }}
+                </td>
+                <td class="summary">
+                  {{ activity.distance }}
+                </td>
+                <td>
+                  {{ activity.calories }}
+                </td>
+                <td>
+                  {{ activity.duration }}
+                </td>
+                <td>
+                  {{ activity.startTime }}
+                </td>
+                <td>
+                  {{ activity.endTime }}
+                </td>
+                <td>
+                  <a class="btn btn-primary" href="{% url 'users:detail' date=date type=type index=activity.index %}" role="button">Details</a>
+                </td>
+              </tr>
+            {% endfor %}
+            {% endfor %}
+            </tbody>
+          </table>
+          <br>
+        </div>
+      </div>
+    </div>
 </div>
 <script>
     var map = L.mapbox.map('map', 'paulmison.gofl3m15')

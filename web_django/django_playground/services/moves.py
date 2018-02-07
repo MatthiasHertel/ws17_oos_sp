@@ -33,6 +33,7 @@ class MovesService:
                 provider=self.name
             )
             return False
+
     def moves_data_available(self, user):
         """Simple Check if any moves-data already exists (depend on the view data functionality)"""
         moves_profile = user.data_profiles.get(provider=self.name)
@@ -50,15 +51,16 @@ class MovesService:
                 filters += '{}={}&'.format(param, kwargs[param])
 
         url = '{}/user/{}/daily{}?{}'.format(self.config['api'], data_type, date, filters)
-        print('MOVES API Request: {}'.format(url))
+        do_request = True
         r = None
-        try:
+        while do_request:
+            print('MOVES API Request: {}'.format(url))
             r = requests.get(url, headers=self.get_headers(moves_profile))
-        except Exception as e:
-            raise Exception('MOVES API ERROR: {}'.format(r.text))
+            print('MOVES API Response: {}'.format(r.status_code))
+            if r.status_code == 200:
+                do_request = False
 
         try:
-            # print('MOVES API Response: {}'.format(r.text))
             return r.json()
         except ValueError:
             raise ValueError('MOVES API Response did not contain JSON: {}'.format(r.text))
