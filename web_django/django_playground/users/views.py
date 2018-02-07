@@ -259,8 +259,8 @@ def mpl_recent(request, date=None):
     plt.legend()
 
     # prepare the response, setting Content-Type
-    response=HttpResponse(content_type='image/png')
+    response=HttpResponse(content_type='image/svg+xml')
     # print the image on the response
-    canvas.print_png(response)
+    canvas.print_figure(response, format='svg')
     # and return it
     return response
