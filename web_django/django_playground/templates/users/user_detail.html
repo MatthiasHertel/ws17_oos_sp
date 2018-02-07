@@ -30,8 +30,10 @@
           <a class="btn btn-primary" href="{{ moves_auth_url }}" role="button">Connect Moves</a>
       {% else %}
           <a class="btn btn-primary" href="{% url 'users:moves_import' %}" role="button">Import Moves Data</a>
+          {% if moves_data_available %}
+            <a class="btn btn-primary" href="{% url 'users:list' %}" role="button">View Moves Data</a>
+          {% endif %}
       {% endif %}
-      <a class="btn btn-primary" href="{% url 'users:list' %}" role="button">View Moves Data</a>
   </div>
 
 </div>

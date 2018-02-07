@@ -33,6 +33,10 @@ class MovesService:
                 provider=self.name
             )
             return False
+    def moves_data_available(self, user):
+        """Simple Check if any moves-data already exists (depend on the view data functionality)"""
+        moves_profile = user.data_profiles.get(provider=self.name)
+        return moves_profile.data_points.exists()
 
     def get_data(self, data_type, moves_profile, **kwargs):
         filters = ''

@@ -33,18 +33,18 @@ class UserDetailView(LoginRequiredMixin, DetailView):
     slug_url_kwarg = 'username'
 
     def get_context_data(self, **kwargs):
-        user = User.objects.get(username=self.request.user.username)
-        user_is_authenticated = moves_service.is_user_authenticated(user)
+        # TODO why not the whole user object ?
+        username = User.objects.get(username=self.request.user.username)
+        user_is_authenticated = moves_service.is_user_authenticated(username)
 
         if user_is_authenticated:
-            moves_service.validate_authentication(user)
+            moves_service.validate_authentication(username)
+        user = self.request.user
 
         context = super(UserDetailView, self).get_context_data(**kwargs)
         context['moves_connected'] = user_is_authenticated
         context['moves_auth_url'] = moves_service.get_auth_url()
-
-        # fig = plt.plot(days)
-        # plt.ylabel('some numbers')
+        context['moves_data_available'] = moves_service.moves_data_available(user)
 
         return context
 
