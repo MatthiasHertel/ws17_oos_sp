@@ -85,7 +85,7 @@ class UtilsService:
 
     def make_summaries(self, day):
         returned = {}
-        lookup = {'walking': 'walking', 'run': 'ran', 'cycling': 'cycled', 'transport': 'Transport'}
+        lookup = {'walking': 'walking', 'running': 'ran', 'cycling': 'cycled', 'transport': 'Transport'}
 
         if not day['summary']:
             return {'walking': 'No activity'}
