@@ -52,6 +52,7 @@ class MovesService:
 
         url = '{}/user/{}/daily{}?{}'.format(self.config['api'], data_type, date, filters)
         do_request = True
+        r = None
         while do_request:
             print('MOVES API Request: {}'.format(url))
             r = requests.get(url, headers=self.get_headers(moves_profile))

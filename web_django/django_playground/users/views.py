@@ -167,11 +167,36 @@ class UserActivityMonthView(LoginRequiredMixin, View):
         })
 
 
-def map(request, date):
-    """returns the rendered map template"""
-    return render(request, 'pages/map.html', {
-        'date':date
+class UserActivityDetailView(LoginRequiredMixin, View):
+    def get(self, request, date, type, index, *args, **kwargs):
+        user = User.objects.get(username=request.user.username)
+        print(index)
+        return render(request, 'pages/detail.html', {
+            'user': user,
         })
+
+def map(request, date):
+    api_date = date.replace('-', '')
+    user = User.objects.get(username=request.user.username)
+    info = moves_service.get_storyline_date(user, utils_service.make_date_from(api_date))
+    activities_map = dict()
+    iterator = dict()
+    if 'segments' in info[0]:
+        for segment in info[0]['segments']:
+            if 'activities' in segment:
+                for activity in segment['activities']:
+                    if activity['group'] not in activities_map:
+                        activities_map[activity['group']] = []
+                        iterator[activity['group']] = 0
+
+                    activity['index'] = iterator[activity['group']]
+                    activities_map[activity['group']].append(activity)
+                    iterator[activity['group']] += 1
+
+    return render(request, 'pages/map.html', {
+        'date': date,
+        'activities_map': activities_map
+    })
 
 
 def geojson(request, date):

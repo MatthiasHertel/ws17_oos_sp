@@ -48,6 +48,11 @@ urlpatterns = [
         view=views.UserActivityMonthView.as_view(),
         name='month'
     ),
+    url(
+        regex=r'^detail/(?P<date>\d{4}-\d{2}-\d{2})/(?P<type>[\w.@+-]+)/(?P<index>\d+)/$',
+        view=views.UserActivityDetailView.as_view(),
+        name='detail'
+    ),
     url(regex=r'^map/(?P<date>\d{4}-\d{2}-\d{2})/$', view=views.map, name='map'),
     url(regex=r'^geojson/(?P<date>\d{4}-\d{2}-\d{2})/$', view=views.geojson, name='geojson'),
     url(regex=r'^mpl_recent.svg/(?P<date>\d{4}\d{2})/$', view=views.mpl_recent, name='mplimage'),
