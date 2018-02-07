@@ -1,44 +1,98 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <h1>username: {{user.username}}</h1>
-  <h2>access_token: {{user.moves_access_token}}</h2>
-  <hr>
-  <h1>Monthly activity</h1>
 
-  <!-- <h2>profile data</h2>
-<pre>
-  {{ profile }}
-</pre> -->
 
-  <h2>{{ sel_month }} {{ sel_year }} </h2>
+<br>
+<!-- welcome claim -->
+<div class="row">
+  <div class="col-md-7">
+    <div class="alert alert-info" role="alert">
+      <p>Hi <strong>{{user.username}}</strong>. <br>
+         Month: <strong> {{ sel_month }} {{ sel_year }} </strong>
+      </p>
 
-  <img src="../../mpl_recent.png/{{ date }}" />
+    </div>
+  </div>
+  <div class="col-md-5">
 
-  <table>{% for day in summary %}
-    <tr>
-      <td>
+    <div class="dropdown show float-right">
+      <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Select Month
+      </a>
+      <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+        {% for month in months %}
+                <a class="dropdown-item" href="/users/month/{{ month|date:'Ym' }}">{{ month|date:"M Y" }}</a>
+        {% endfor %}
+        <div class="dropdown-divider"></div>
+        <a class="dropdown-item" href="/users/list">Overview last 30 Days</a>
+      </div>
+    </div>
+    <br>
 
-        <a href="../../map/{{day.dateObj|date:"Y-m-d"}}">{{ day.dateObj }}</a>
-      </td>
+  </div>
+</div>
 
-      <td class="summary">
-        {{day.summary.walking}}
-      </td>
+<hr>
 
-      <td><a href="../../geojson/{{ day.dateObj|date:'Y-m-d' }}" title="">GeoJSON</a></td>
-    </tr>
+<div class="row">
+  <div class="col-md-7">
+    <h4>Overview: {{ sel_month }} {{ sel_year }}</h4>
+    <br>
+    <table id="table_id" class="table table-striped table-bordered" style="width:100%">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Short description</th>
+                <th>GeoJSON</th>
+            </tr>
+        </thead>
+        <tbody>
+              {% for day in summary %}
+                <tr>
+                <td>
 
-  {% endfor %}</table>
+                    <a href="/users/map/{{day.dateObj|date:"Y-m-d"}}">{{ day.dateObj }}</a>
+                </td>
 
-  <hr>
-  <p>{% for month in months %}        x
-    <a href="{% url 'users:month' date=month|date:'Ym' %}">{{ month|date:"M Y" }}</a><br>
+                  <td class="summary">
+                    {{day.summary.walking}}
+                  </td>
 
-  {% endfor %}
-  </p>
+                  <td><a href="/users/geojson/{{ day.dateObj|date:'Y-m-d' }}" title="">GeoJSON</a></li></td>
+                </tr>
 
-  <hr>
-  <p><a href="/users/list"><< Back</a></p>
+                  {% endfor %}
+
+        </tbody>
+    </table>
+
+  </div>
+  <div class="col-md-5">
+    <h4>Matplot-Diagram: {{ sel_month }} {{ sel_year }}</h4>
+    <br>
+    <figure class="figure">
+      <img src="/users/mpl_recent.png/{{ date }}" class="figure-img" alt="A generic square placeholder image with rounded corners in a figure.">
+    </figure>
+  </div>
+</div>
+
+
+
 
 {% endblock content %}
+
+
+{% block javascript %}
+
+<!-- settings for datatables -->
+<script type="text/javascript">
+$(document).ready( function () {
+  $('#table_id').DataTable({
+    "order": [],
+    "ordering": false,
+  });
+} );
+</script>
+
+{% endblock %}

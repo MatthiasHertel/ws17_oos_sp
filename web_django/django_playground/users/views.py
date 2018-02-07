@@ -128,7 +128,8 @@ class UserActivityListView(LoginRequiredMixin, View):
 
         return render(request, 'pages/list.html', {
             'user': user,
-            'profile': json.dumps(moves_profile.data, indent=2),
+            # 'profile': json.dumps(moves_profile.data, indent=2),
+            'profile': moves_profile.data,
             'summary': summary,
             'days': using_for,
             'months': months
