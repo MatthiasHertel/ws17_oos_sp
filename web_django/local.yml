@@ -5,7 +5,7 @@ volumes:
   postgres_backup_local: {}
 
 services:
-  django:
+  django: &django
     build:
       context: .
       dockerfile: ./compose/local/django/Dockerfile
@@ -69,3 +69,22 @@ services:
     ports:
       - "8025:8025"
     restart: unless-stopped
+  celeryworker:
+    # https://github.com/docker/compose/issues/3220
+    <<: *django
+    depends_on:
+      - redis
+      - postgres
+      - mailhog
+    ports: []
+    command: /start-celeryworker.sh
+
+  celerybeat:
+    # https://github.com/docker/compose/issues/3220
+    <<: *django
+    depends_on:
+      - redis
+      - postgres
+      - mailhog
+    ports: []
+    command: /start-celerybeat.sh
