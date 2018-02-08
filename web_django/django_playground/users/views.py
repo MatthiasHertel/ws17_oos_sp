@@ -180,104 +180,107 @@ class UserActivityDetailView(LoginRequiredMixin, View):
             'activity': activity
         })
 
-def map(request, date):
-    api_date = date.replace('-', '')
-    user = User.objects.get(username=request.user.username)
-    activities = moves_service.get_activities_date(user, utils_service.make_date_from(api_date))
 
-    return render(request, 'pages/map.html', {
-        'date': date,
-        'activities': activities
-    })
+class UserActivityMapView(LoginRequiredMixin, View):
+    def get(self, request, date, *args, **kwargs):
+        api_date = date.replace('-', '')
+        user = User.objects.get(username=request.user.username)
+        activities = moves_service.get_activities_date(user, utils_service.make_date_from(api_date))
 
-
-def geojson(request, date):
-    """returns a json for mapview is called via ajax in map template"""
-    api_date = date.replace('-', '')
-    utils_service.validate_date(api_date)
-
-    user = User.objects.get(username=request.user.username)
-    info = moves_service.get_storyline_date(user, utils_service.make_date_from(api_date))
-
-    features = []
-    for segment in info[0]['segments']:
-        if segment['type'] == 'place':
-            features.append(utils_service.geojson_place(segment))
-        elif segment['type'] == 'move':
-            features.extend(utils_service.geojson_move(segment))
-
-    geojson = {'type': 'FeatureCollection', 'features': features}
-    filename = "moves-%s.geojson" % date
-    # headers = (('Content-Disposition', 'attachment; filename="%s"' % filename),)
-    return HttpResponse(json.dumps(geojson),  content_type='application/geo+json')
+        return render(request, 'pages/map.html', {
+            'date': date,
+            'activities': activities
+        })
 
 
-def mpl_recent(request, date=None):
-    """returns a matplot image"""
-    # init figure & canvas
-    fig = plt.figure()
-    canvas = FigureCanvas(fig)
+class UserActivityGeoJsonView(LoginRequiredMixin, View):
+    def get(self, request, date, *args, **kwargs):
+        """returns a json for mapview is called via ajax in map template"""
+        api_date = date.replace('-', '')
+        utils_service.validate_date(api_date)
+
+        user = User.objects.get(username=request.user.username)
+        info = moves_service.get_storyline_date(user, utils_service.make_date_from(api_date))
+
+        features = []
+        for segment in info[0]['segments']:
+            if segment['type'] == 'place':
+                features.append(utils_service.geojson_place(segment))
+            elif segment['type'] == 'move':
+                features.extend(utils_service.geojson_move(segment))
+
+        geojson = {'type': 'FeatureCollection', 'features': features}
+        filename = "moves-%s.geojson" % date
+        return HttpResponse(json.dumps(geojson),  content_type='application/geo+json')
 
 
-    # color map for coloring diagram-stuff
-    # ref: https://matplotlib.org/examples/color/colormaps_reference.html
-    color_list = plt.cm.tab10(np.linspace(0, 1, 12))
-
-    user = User.objects.get(username=request.user.username)
-    if date is not None:
-        adjust_date = utils_service.make_date_from(date)
-        summary = moves_service.get_summary_month(user, adjust_date)
-    else:
-        summary = moves_service.get_summary_past_days(user, 30)
-
-    summary.reverse()
-    #print(summary)
-    activities = { 1: 'walking', 2: 'run', 3: 'cycling' }
-
-    for act in activities:
-        x = []
-        y = []
-        dailydist = {}
-        dailydist.clear()
-
-        activity = activities[act]
-
-        for day in summary:
-
-            if not day['summary']:
-                dailydist[day['date']] = 0
-                continue
-            for element in day['summary']:
-                if element['activity'] == activity:
-                    dailydist[day['date']] = element['distance']
-
-        try:
-            list = sorted(dailydist.items())
-            x, y = zip(*list)
-            x = [utils_service.make_date_from(key) for key in x]
-            #x = [str(key) for key in x]
-
-            # do the plotting
-            if np.sum(y) > 0:
-                plt.plot(x, y, color=color_list[act], label=activity)
-
-        except ValueError as err:
-            print("Value Error", err)
+class UserActivityMplView(LoginRequiredMixin, View):
+    def get(self, request, date=None, *args, **kwargs):
+        """returns a matplot image"""
+        # init figure & canvas
+        fig = plt.figure()
+        canvas = FigureCanvas(fig)
 
 
-    plt.title("Recent Activities")
-    plt.ylabel('Distances (m)')
-    plt.xlabel('Date')
+        # color map for coloring diagram-stuff
+        # ref: https://matplotlib.org/examples/color/colormaps_reference.html
+        color_list = plt.cm.tab10(np.linspace(0, 1, 12))
 
-    plt.xticks(fontsize=8, rotation=33)
-    plt.subplots_adjust(bottom=0.15)
-    plt.grid(True, 'major', 'x', ls='--', lw=.5, c='k', alpha=.3)
+        user = User.objects.get(username=request.user.username)
+        if date is not None:
+            adjust_date = utils_service.make_date_from(date)
+            summary = moves_service.get_summary_month(user, adjust_date)
+        else:
+            summary = moves_service.get_summary_past_days(user, 30)
 
-    plt.legend()
+        summary.reverse()
+        #print(summary)
+        activities = { 1: 'walking', 2: 'run', 3: 'cycling' }
 
-    # prepare the response, setting Content-Type
-    response=HttpResponse(content_type='image/svg+xml')
-    # print the image on the response
-    canvas.print_figure(response, format='svg')
-    # and return it
-    return response
+        for act in activities:
+            x = []
+            y = []
+            dailydist = {}
+            dailydist.clear()
+
+            activity = activities[act]
+
+            for day in summary:
+
+                if not day['summary']:
+                    dailydist[day['date']] = 0
+                    continue
+                for element in day['summary']:
+                    if element['activity'] == activity:
+                        dailydist[day['date']] = element['distance']
+
+            try:
+                list = sorted(dailydist.items())
+                x, y = zip(*list)
+                x = [utils_service.make_date_from(key) for key in x]
+                #x = [str(key) for key in x]
+
+                # do the plotting
+                if np.sum(y) > 0:
+                    plt.plot(x, y, color=color_list[act], label=activity)
+
+            except ValueError as err:
+                print("Value Error", err)
+
+
+        plt.title("Recent Activities")
+        plt.ylabel('Distances (m)')
+        plt.xlabel('Date')
+
+        plt.xticks(fontsize=8, rotation=33)
+        plt.subplots_adjust(bottom=0.15)
+        plt.grid(True, 'major', 'x', ls='--', lw=.5, c='k', alpha=.3)
+
+        plt.legend()
+
+        # prepare the response, setting Content-Type
+        response=HttpResponse(content_type='image/svg+xml')
+        # print the image on the response
+        canvas.print_figure(response, format='svg')
+        # and return it
+        return response

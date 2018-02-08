@@ -53,10 +53,10 @@ urlpatterns = [
         view=views.UserActivityDetailView.as_view(),
         name='detail'
     ),
-    url(regex=r'^map/(?P<date>\d{4}-\d{2}-\d{2})/$', view=views.map, name='map'),
-    url(regex=r'^geojson/(?P<date>\d{4}-\d{2}-\d{2})/$', view=views.geojson, name='geojson'),
-    url(regex=r'^mpl_recent.svg/(?P<date>\d{4}\d{2})/$', view=views.mpl_recent, name='mplimage'),
-    url(regex=r'^mpl_recent.svg$', view=views.mpl_recent, name='mpl_recent'),
+    url(regex=r'^map/(?P<date>\d{4}-\d{2}-\d{2})/$', view=views.UserActivityMapView.as_view(), name='map'),
+    url(regex=r'^geojson/(?P<date>\d{4}-\d{2}-\d{2})/$', view=views.UserActivityGeoJsonView.as_view(), name='geojson'),
+    url(regex=r'^mpl_recent.svg/(?P<date>\d{4}\d{2})/$', view=views.UserActivityMplView.as_view(), name='mplimage'),
+    url(regex=r'^mpl_recent.svg$', view=views.UserActivityMplView.as_view(), name='mpl_recent'),
 ]
 
 channel_routing = [
