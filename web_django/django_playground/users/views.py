@@ -173,9 +173,11 @@ class UserActivityMonthView(LoginRequiredMixin, View):
 class UserActivityDetailView(LoginRequiredMixin, View):
     def get(self, request, date, index, *args, **kwargs):
         user = User.objects.get(username=request.user.username)
-        print(index)
+        api_date = date.replace('-', '')
+        activity = moves_service.get_activity_date(user, utils_service.make_date_from(api_date), int(index))
         return render(request, 'pages/detail.html', {
             'user': user,
+            'activity': activity
         })
 
 def map(request, date):

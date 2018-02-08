@@ -121,6 +121,9 @@ class MovesService:
         R = 6371e3
         if 'activities' in data_point:
             for activity in data_point['activities']:
+                max_speed = 0
+                avg_speed = 0
+                speed_iter = 0
                 if 'trackPoints' in activity:
                     lastLat = None
                     lastLon = None
@@ -146,16 +149,27 @@ class MovesService:
 
                             seconds = (currentTime-lastTime).total_seconds()
                             if seconds > 0:
-                                meters_per_second= d/seconds
+                                meters_per_second = d/seconds
                                 meters_per_hour = meters_per_second*60*60
                                 km_per_hour = meters_per_hour / 1000
                                 track_point['speed'] = meters_per_second
                                 track_point['speed_kmh'] = km_per_hour
                                 track_point['distance'] = d
 
+                                avg_speed += km_per_hour
+                                speed_iter += 1
+                                if km_per_hour > max_speed:
+                                    max_speed = km_per_hour
+
                             lastLat = currentLat
                             lastLon = currentLon
                             lastTime = currentTime
+
+                if speed_iter > 0:
+                    avg_speed = avg_speed/speed_iter
+
+                activity['max_speed'] = max_speed
+                activity['avg_speed'] = avg_speed
         return data_point
 
     def calculate_summary(self, segments):
@@ -195,6 +209,9 @@ class MovesService:
                         activities.append(activity)
 
         return sorted(activities, key=itemgetter('startTime'))
+
+    def get_activity_date(self, user, date, index):
+        return self.get_activities_date(user, date)[index]
 
     def get_summary_past_days(self, user, days_past):
         return self.get_data_points_past_days(user, days_past=days_past)
