@@ -49,7 +49,7 @@ urlpatterns = [
         name='month'
     ),
     url(
-        regex=r'^detail/(?P<date>\d{4}-\d{2}-\d{2})/(?P<type>[\w.@+-]+)/(?P<index>\d+)/$',
+        regex=r'^detail/(?P<date>\d{4}-\d{2}-\d{2})/(?P<index>\d+)/$',
         view=views.UserActivityDetailView.as_view(),
         name='detail'
     ),

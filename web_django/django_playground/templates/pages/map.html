@@ -56,7 +56,6 @@
             </tr>
             </thead>
             <tbody>
-            {% for type, activities in activities_map.items %}
             {% for activity in activities %}
               <tr>
                 <td>
@@ -78,10 +77,9 @@
                   {{ activity.endTime }}
                 </td>
                 <td>
-                  <a class="btn btn-primary" href="{% url 'users:detail' date=date type=type index=activity.index %}" role="button">Details</a>
+                  <a class="btn btn-primary" href="{% url 'users:detail' date=date index=forloop.counter0 %}" role="button">Details</a>
                 </td>
               </tr>
-            {% endfor %}
             {% endfor %}
             </tbody>
           </table>

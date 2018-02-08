@@ -90,7 +90,6 @@ class MovesService:
             date__gte=from_date,
             date__lte=to_date
         ).order_by('date')
-        # TODO die ausgabe ist nicht deterministisch heisst das order by oben ist nutzlos durch den aufruf von transform_data_points
         return self.transform_data_points(data_points)
 
     def transform_data_points(self, data_points):
@@ -183,6 +182,19 @@ class MovesService:
         for activity_name in summary:
             response.append(summary[activity_name])
         return response
+
+    def get_activities_date(self, user, date):
+        data = self.get_storyline_date(user, date)
+        activities = []
+        if 'segments' in data[0]:
+            for segment in data[0]['segments']:
+                if 'activities' in segment:
+                    for activity in segment['activities']:
+                        activity['startTime'] = self.create_date(activity['startTime'])
+                        activity['endTime'] = self.create_date(activity['endTime'])
+                        activities.append(activity)
+
+        return sorted(activities, key=itemgetter('startTime'))
 
     def get_summary_past_days(self, user, days_past):
         return self.get_data_points_past_days(user, days_past=days_past)
