@@ -10,7 +10,12 @@
       <p>Hi <strong>{{user.username}}</strong>. <br>
         You've been using Moves for <strong>{{ days }} days</strong>. <br>
         Your Timezone is: <strong> {{profile.profile.currentTimeZone.id }}</strong> <br>
-        Your Tracking Device OS is: <strong> {{profile.profile.platform | upper}}</strong>
+        Your Tracking Device OS is: <strong> {{profile.profile.platform | upper}}</strong> <br><br>
+        Totals:<br>
+        Distance (Walking | Cycling | Transport) <strong> {{profile.totals.walking.distance}} | {{profile.totals.cycling.distance}} | {{profile.totals.transport.distance}}</strong><br>
+        Duration (Walking | Cycling | Transport) <strong> {{profile.totals.walking.duration}} | {{profile.totals.cycling.duration}} | {{profile.totals.transport.duration}}</strong><br>
+        Calories (Walking | Cycling ) <strong> {{profile.totals.walking.calories}} | {{profile.totals.cycling.calories}}</strong><br>
+        Steps (Walking) <strong> {{profile.totals.walking.steps}}</strong>
       </p>
     </div>
   </div>

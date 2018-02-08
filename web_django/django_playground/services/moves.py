@@ -7,6 +7,7 @@ import json
 import sys
 import math
 from datetime import datetime, timedelta
+import time
 from operator import itemgetter, attrgetter
 from calendar import monthrange
 
@@ -59,6 +60,8 @@ class MovesService:
             print('MOVES API Response: {}'.format(r.status_code))
             if r.status_code == 200:
                 do_request = False
+            else:
+                time.sleep(10)
 
         try:
             return r.json()
@@ -255,6 +258,37 @@ class MovesService:
                                 type=segment['type'],
                                 data=segment
                             )
+
+                            if segment['type'] == 'move':
+                                for activity in segment['activities']:
+                                    if 'totals' not in moves_profile.data:
+                                        moves_profile.data['totals'] = dict(
+                                            walking=dict(
+                                                calories=0,
+                                                distance=0,
+                                                duration=0,
+                                                steps=0
+                                            ),
+                                            cycling=dict(
+                                                calories=0,
+                                                distance=0,
+                                                duration=0,
+                                            ),
+                                            transport=dict(
+                                                distance=0,
+                                                duration=0,
+                                            )
+                                        )
+                                    moves_profile.data['totals'][activity['activity']]['distance'] += int(activity['distance'])
+                                    moves_profile.data['totals'][activity['activity']]['duration'] += int(activity['duration'])
+
+                                    if activity['activity'] == 'walking' or activity['activity'] == 'cycling':
+                                        moves_profile.data['totals'][activity['activity']]['calories'] += int(activity['calories'])
+
+                                    if activity['activity'] == 'walking':
+                                        moves_profile.data['totals'][activity['activity']]['steps'] += int(activity['steps'])
+
+            moves_profile.save()
         except Exception as e:
             if hasattr(e, 'message'):
                 print('Import ERROR {}'.format(e.message))
