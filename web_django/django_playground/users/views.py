@@ -300,19 +300,24 @@ class UserActivityMplDetailView(LoginRequiredMixin, View):
         api_date = date.replace('-', '')
         activity = moves_service.get_activity_date(user, utils_service.make_date_from(api_date), int(index))
 
-        print(type(activity))
-        print(type(activity['trackPoints']))
+        #print(type(activity))
+        print((activity['trackPoints']))
 
         #print(activity)
         speedist = {}
+        distance = 0
 
         for tp in activity['trackPoints']:
-            for key in tp:
-                print(key)
-                #print(l['distance'])
-            #speedist[tp['speed_kmh']] = tp['distance']
 
+            if tp.get('speed_kmh') is not None:
+                distance += tp.get('distance')
+
+                speedist[tp.get('speed_kmh')] = tp.get('distance')
+        print("distance:", distance)
         print(speedist)
+
+        list = speedist.items()
+        x, y = zip(*list)
 
         fig = plt.figure()
         canvas = FigureCanvas(fig)
@@ -321,18 +326,6 @@ class UserActivityMplDetailView(LoginRequiredMixin, View):
         #plt.box(False)
         #ax1.axis([0, 6, 0, 20])
 
-        #majorLocator = MultipleLocator(10)
-        #majorFormatter = FormatStrFormatter('%d')
-        #minorLocator = MultipleLocator(5)
-
-        t = np.arange(0.0, 100.0, 0.1)
-        s = np.sin(0.1 * np.pi * t) * np.exp(-t * 0.01)
-
-        #ax1.xaxis.set_major_locator(majorLocator)
-        #ax1.xaxis.set_major_formatter(majorFormatter)
-
-        # for the minor ticks, use no labels; default NullFormatter
-        #ax1.xaxis.set_minor_locator(minorLocator)
         ax1.tick_params(
             axis='x',  # changes apply to the x-axis
             which='minor',  # both major and minor ticks are affected
@@ -346,7 +339,7 @@ class UserActivityMplDetailView(LoginRequiredMixin, View):
         #ax2.set_xticklabels(tick_function(new_tick_locations))
         #ax2.set_xlabel(r"Modified x-axis: $1/(1+X)$")
 
-        plt.plot(t, s, 'o-')
+        plt.plot(y, x, 'o-')
         # prepare the response, setting Content-Type
         response = HttpResponse(content_type='image/svg+xml')
         # print the image on the response
