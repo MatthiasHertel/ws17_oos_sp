@@ -17,5 +17,5 @@ def format_meters(value, unit):
 
 
 @register.filter(name='format_seconds')
-def format_meters(value):
+def format_seconds(value):
     return '{}'.format(datetime.timedelta(seconds=value))
