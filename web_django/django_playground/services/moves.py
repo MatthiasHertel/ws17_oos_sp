@@ -7,6 +7,7 @@ import json
 import sys
 import math
 from datetime import datetime, timedelta
+import time
 from operator import itemgetter, attrgetter
 from calendar import monthrange
 
@@ -17,7 +18,7 @@ logger = logging.getLogger(__name__)
 class MovesService:
     """Service that offers Access to MOVES Api - https://dev.moves-app.com ."""
 
-    config = settings.MOVES
+    config = settings.MOVES_API
 
     name = 'moves'
 
@@ -59,6 +60,8 @@ class MovesService:
             print('MOVES API Response: {}'.format(r.status_code))
             if r.status_code == 200:
                 do_request = False
+            else:
+                time.sleep(10)
 
         try:
             return r.json()
@@ -211,7 +214,15 @@ class MovesService:
         return sorted(activities, key=itemgetter('startTime'))
 
     def get_activity_date(self, user, date, index):
-        return self.get_activities_date(user, date)[index]
+        activity = self.get_activities_date(user, date)[index]
+        # get weather conditions based on first track point
+        if 'trackPoints' in activity and len(activity['trackPoints']) > 0:
+            time = self.create_date(activity['trackPoints'][0]['time'])
+            forecast_url = '{}/{},{},{}?units=auto'.format(settings.DARKSKY_API['api'], activity['trackPoints'][0]['lat'], activity['trackPoints'][0]['lon'], time.strftime('%s'))
+            response = requests.get(forecast_url).json()
+            activity['weather'] = response
+
+        return activity
 
     def get_summary_past_days(self, user, days_past):
         return self.get_data_points_past_days(user, days_past=days_past)
@@ -255,6 +266,37 @@ class MovesService:
                                 type=segment['type'],
                                 data=segment
                             )
+
+                            if segment['type'] == 'move':
+                                for activity in segment['activities']:
+                                    if 'totals' not in moves_profile.data:
+                                        moves_profile.data['totals'] = dict(
+                                            walking=dict(
+                                                calories=0,
+                                                distance=0,
+                                                duration=0,
+                                                steps=0
+                                            ),
+                                            cycling=dict(
+                                                calories=0,
+                                                distance=0,
+                                                duration=0,
+                                            ),
+                                            transport=dict(
+                                                distance=0,
+                                                duration=0,
+                                            )
+                                        )
+                                    moves_profile.data['totals'][activity['activity']]['distance'] += int(activity['distance'])
+                                    moves_profile.data['totals'][activity['activity']]['duration'] += int(activity['duration'])
+
+                                    if activity['activity'] == 'walking' or activity['activity'] == 'cycling':
+                                        moves_profile.data['totals'][activity['activity']]['calories'] += int(activity['calories'])
+
+                                    if activity['activity'] == 'walking':
+                                        moves_profile.data['totals'][activity['activity']]['steps'] += int(activity['steps'])
+
+            moves_profile.save()
         except Exception as e:
             if hasattr(e, 'message'):
                 print('Import ERROR {}'.format(e.message))
@@ -314,7 +356,7 @@ class MovesService:
             self.refresh_access_token(user)
 
     def get_config(self):
-        return settings.MOVES
+        return settings.MOVES_API
 
     def get_headers(self, moves_profile):
         return {'Authorization':  'Bearer {}'.format(moves_profile.auth_data['access_token'])}

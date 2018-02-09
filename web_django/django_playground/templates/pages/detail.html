@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+{% load unit_conversion %}
+{% load humanize %}
 {% block head %}
 
 {% endblock %}
@@ -22,25 +24,29 @@
               <tbody>
               <tr>
                 <th>Distance</th>
-                <td>{{ activity.distance }}</td>
+                <td>{{ activity.distance|format_meters:"km" }}</td>
               </tr>
               {% if activity.max_speed > 0 %}
               <tr>
                 <th>Max. Speed</th>
-                <td>{{ activity.max_speed }}</td>
+                <td>{{ activity.max_speed }} kmh</td>
               </tr>
               <tr>
                 <th>Avg. Speed</th>
-                <td>{{ activity.avg_speed }}</td>
+                <td>{{ activity.avg_speed }} kmh</td>
               </tr>
               {% endif %}
               <tr>
-                <th>Calories</th>
-                <td>{{ activity.calories }}</td>
+                <th>Calories (kJ)</th>
+                <td>{{ activity.calories }} ({{ activity.calories|calories_to_kj }})</td>
+              </tr>
+              <tr>
+                <th>Watts</th>
+                <td>{{ activity.calories|calories_to_watts:activity.duration }}</td>
               </tr>
               <tr>
                 <th>Duration</th>
-                <td>{{ activity.duration }}</td>
+                <td>{{ activity.duration|format_seconds }}</td>
               </tr>
               <tr>
                 <th>Start</th>
@@ -55,5 +61,37 @@
           </div>
         </div>
       </div>
-</div>
+    {% if 'weather' in activity %}
+    <div class="card">
+      <div class="card-header">
+        <strong>Weather Conditions</strong>
+      </div>
+      <table class="table table-striped table-bordered">
+        <tbody>
+        <tr>
+          <th>Summary</th>
+          <td>{{ activity.weather.currently.summary }}</td>
+        </tr>
+        <tr>
+          <th>Temperature (Actual/Feels Like)</th>
+          <td>{{ activity.weather.currently.temperature }} &#8451; / {{ activity.weather.currently.apparentTemperature }} &#8451;</td>
+        </tr>
+        <tr>
+          <th>Wind Speed</th>
+          <td>{{ activity.weather.currently.windSpeed|format_miles:"km" }}h</td>
+        </tr>
+        <tr>
+          <th>Humidity</th>
+          <td>{% widthratio activity.weather.currently.humidity 1 100 %} %</td>
+        </tr>
+        <tr>
+          <th>Visibility</th>
+          <td>{{ activity.weather.currently.visibility|format_miles:"km" }}</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+  </div> {# row end #}
+</div> {# container end #}
 {% endblock content %}

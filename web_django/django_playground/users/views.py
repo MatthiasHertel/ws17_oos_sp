@@ -7,16 +7,10 @@ from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from .models import User
-from .models import DataProfile
 from ..services import moves_service
 from ..services import utils_service
 
-from datetime import date, datetime, timedelta
-from dateutil.relativedelta import relativedelta
-
 import logging
-logger = logging.getLogger(__name__)
-import requests
 from channels import Channel
 import json
 
@@ -28,6 +22,8 @@ from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 
 import matplotlib.pyplot as plt
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 class UserDetailView(LoginRequiredMixin, DetailView):
     model = User
