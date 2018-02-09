@@ -53,10 +53,12 @@ urlpatterns = [
         view=views.UserActivityDetailView.as_view(),
         name='detail'
     ),
+    url(regex=r'^detail/(?P<date>\d{4}-\d{2}-\d{2})/(?P<index>\d+)/mpl_detail.svg$', view=views.UserActivityMplDetailView.as_view(), name='mpl_detail'),
     url(regex=r'^map/(?P<date>\d{4}-\d{2}-\d{2})/$', view=views.UserActivityMapView.as_view(), name='map'),
     url(regex=r'^geojson/(?P<date>\d{4}-\d{2}-\d{2})/$', view=views.UserActivityGeoJsonView.as_view(), name='geojson'),
     url(regex=r'^mpl_recent.svg/(?P<date>\d{4}\d{2})/$', view=views.UserActivityMplView.as_view(), name='mplimage'),
     url(regex=r'^mpl_recent.svg$', view=views.UserActivityMplView.as_view(), name='mpl_recent'),
+
 ]
 
 channel_routing = [
