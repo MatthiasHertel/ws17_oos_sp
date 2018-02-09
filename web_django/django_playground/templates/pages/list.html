@@ -13,9 +13,9 @@
         You've been using Moves for <strong>{{ days }} days</strong>. <br>
         Your Timezone is: <strong> {{profile.profile.currentTimeZone.id }}</strong> <br>
         Your Tracking Device OS is: <strong> {{profile.profile.platform | upper}}</strong> <br><br>
-        Distance (Walking | Cycling | Transport)<br> <strong> {{profile.totals.walking.distance|format_meters:"km"}} | {{profile.totals.cycling.distance|format_meters:"km"}} | {{profile.totals.transport.distance|format_meters:"km"}}</strong><br>
-        Duration (Walking | Cycling | Transport)<br> <strong> {{profile.totals.walking.duration|format_seconds}} | {{profile.totals.cycling.duration|format_seconds}} | {{profile.totals.transport.duration|format_seconds}}</strong><br>
-        Calories (Walking | Cycling)<br> <strong> {{profile.totals.walking.calories|intcomma}} | {{profile.totals.cycling.calories|intcomma}}</strong><br>
+        Distance covered (Walking | Cycling | Transport)<br> <strong> {{profile.totals.walking.distance|format_meters:"km"}} | {{profile.totals.cycling.distance|format_meters:"km"}} | {{profile.totals.transport.distance|format_meters:"km"}}</strong><br>
+        Time Spent (Walking | Cycling | Transport)<br> <strong> {{profile.totals.walking.duration|format_seconds}} | {{profile.totals.cycling.duration|format_seconds}} | {{profile.totals.transport.duration|format_seconds}}</strong><br>
+        Calories Burned<br> <strong> Walking: {{profile.totals.walking.calories|format_pizza}}<br>Cycling: {{profile.totals.cycling.calories|format_pizza}}</strong><br>
         Steps (Walking)<br><strong> {{profile.totals.walking.steps|intword}}</strong>
       </p>
     </div>

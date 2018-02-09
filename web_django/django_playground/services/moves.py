@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class MovesService:
     """Service that offers Access to MOVES Api - https://dev.moves-app.com ."""
 
-    config = settings.MOVES
+    config = settings.MOVES_API
 
     name = 'moves'
 
@@ -215,12 +215,12 @@ class MovesService:
 
     def get_activity_date(self, user, date, index):
         activity = self.get_activities_date(user, date)[index]
-        if 'trackPoints' in activity:
+        # get weather conditions based on first track point
+        if 'trackPoints' in activity and len(activity['trackPoints']) > 0:
             time = self.create_date(activity['trackPoints'][0]['time'])
-            # todo api url to config
-            forecast_url = 'https://api.darksky.net/forecast/f63cd475635eb732eb81572107b7dd78/{},{},{}'.format(activity['trackPoints'][0]['lat'], activity['trackPoints'][0]['lon'], time.strftime('%s'))
+            forecast_url = '{}/{},{},{}?units=auto'.format(settings.DARKSKY_API['api'], activity['trackPoints'][0]['lat'], activity['trackPoints'][0]['lon'], time.strftime('%s'))
             response = requests.get(forecast_url).json()
-            activity['conditions'] = response
+            activity['weather'] = response
 
         return activity
 
@@ -356,7 +356,7 @@ class MovesService:
             self.refresh_access_token(user)
 
     def get_config(self):
-        return settings.MOVES
+        return settings.MOVES_API
 
     def get_headers(self, moves_profile):
         return {'Authorization':  'Bearer {}'.format(moves_profile.auth_data['access_token'])}

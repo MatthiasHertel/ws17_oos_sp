@@ -16,6 +16,23 @@ def format_meters(value, unit):
     return Distance(m=value).m
 
 
+@register.filter(name='format_miles')
+def format_miles(value, unit):
+    if unit == 'km':
+        return '{:.0f} km'.format(Distance(mi=value).km)
+
+    if unit == 'm':
+        return '{:.0f} meters'.format(Distance(mi=value).m)
+
+    return Distance(mi=value).m
+
+
 @register.filter(name='format_seconds')
 def format_seconds(value):
     return '{}'.format(datetime.timedelta(seconds=value))
+
+
+@register.filter(name='format_pizza')
+def format_pizza(calories):
+    pizza_calories = 900
+    return '{} which equals {:.0f} pizzas!'.format(calories, int(calories)/pizza_calories)

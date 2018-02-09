@@ -277,11 +277,15 @@ ADMIN_URL = r'^admin/'
 
 
 # MOVES specific configuration
-MOVES = {
+MOVES_API = {
     'client_id': env('CLIENT_ID'),
     'client_secret': env('CLIENT_SECRET'),
     'api_auth': env('API_AUTH'),
     'api': env('API')
+}
+
+DARKSKY_API = {
+    'api': 'https://api.darksky.net/forecast/f63cd475635eb732eb81572107b7dd78'
 }
 
 # In settings.py
