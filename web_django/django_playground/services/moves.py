@@ -214,7 +214,15 @@ class MovesService:
         return sorted(activities, key=itemgetter('startTime'))
 
     def get_activity_date(self, user, date, index):
-        return self.get_activities_date(user, date)[index]
+        activity = self.get_activities_date(user, date)[index]
+        if 'trackPoints' in activity:
+            time = self.create_date(activity['trackPoints'][0]['time'])
+            # todo api url to config
+            forecast_url = 'https://api.darksky.net/forecast/f63cd475635eb732eb81572107b7dd78/{},{},{}'.format(activity['trackPoints'][0]['lat'], activity['trackPoints'][0]['lon'], time.strftime('%s'))
+            response = requests.get(forecast_url).json()
+            activity['conditions'] = response
+
+        return activity
 
     def get_summary_past_days(self, user, days_past):
         return self.get_data_points_past_days(user, days_past=days_past)
