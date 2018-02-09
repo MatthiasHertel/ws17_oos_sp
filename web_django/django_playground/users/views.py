@@ -179,7 +179,7 @@ class UserActivityDetailView(LoginRequiredMixin, View):
         return render(request, 'pages/detail.html', {
             'user': user,
             'activity': activity,
-            'date': api_date
+            'date': date
         })
 
 
@@ -218,7 +218,8 @@ class UserActivityGeoJsonView(LoginRequiredMixin, View):
 
 class UserActivityMplView(LoginRequiredMixin, View):
     def get(self, request, date=None, *args, **kwargs):
-        """returns a matplot image"""
+        """returns a matplot activity image"""
+
         # init figure & canvas
         fig = plt.figure()
         canvas = FigureCanvas(fig)
@@ -236,7 +237,8 @@ class UserActivityMplView(LoginRequiredMixin, View):
 
         summary.reverse()
         #print(summary)
-        activities = { 1: 'walking', 2: 'run', 3: 'cycling' }
+        activities = { 1: 'walking', 2: 'running', 3: 'cycling' }
+        activity = ''
 
         for act in activities:
             x = []
@@ -263,7 +265,7 @@ class UserActivityMplView(LoginRequiredMixin, View):
 
                 # do the plotting
                 if np.sum(y) > 0:
-                    plt.plot(x, y, 'o-', color=color_list[act], label=activity)
+                    plt.plot(x, y, 'o-', color=color_list[utils_service.get_activity_color(activity)], label=activity)
 
             except ValueError as err:
                 print("Value Error", err)
@@ -271,19 +273,19 @@ class UserActivityMplView(LoginRequiredMixin, View):
         # set plot title
         plt.title("Recent Activities")
 
-        # set label x-axis
-        plt.xlabel('Date')
+        # set label for x-axis
+        plt.xlabel('Date', labelpad=10)
 
-        # set label y-axis
-        plt.ylabel('Distances (m)')
+        # set label for y-axis
+        plt.ylabel('Distances (m)', labelpad=10)
 
         # settings for ticks on x-axis
         plt.xticks(fontsize=8, rotation=33)
 
         # misc settings
-        plt.subplots_adjust(bottom=0.15)
-        plt.grid(True, 'major', 'x', ls='--', lw=.5, c='k', alpha=.3)
-
+        plt.subplots_adjust(bottom=0.2, left=0.15)
+        plt.grid(True, 'major', 'both', ls='--', lw=.5, c='k', alpha=.15)
+        plt.box(False)
         # enable legend
         plt.legend()
 
@@ -295,51 +297,67 @@ class UserActivityMplView(LoginRequiredMixin, View):
         return response
 
 class UserActivityMplDetailView(LoginRequiredMixin, View):
+    """returns a matplot activity-detail image"""
     def get(self, request, date, index, *args, **kwargs):
         user = User.objects.get(username=request.user.username)
         api_date = date.replace('-', '')
         activity = moves_service.get_activity_date(user, utils_service.make_date_from(api_date), int(index))
 
-        #print(type(activity))
-        print((activity['trackPoints']))
+        # extracting useful data
+        currActivity = activity['activity']
+        print(currActivity)
+        cutout = activity['trackPoints']
 
-        #print(activity)
+        # color map for coloring diagram-stuff
+        # ref: https://matplotlib.org/examples/color/colormaps_reference.html
+        color_list = plt.cm.tab10(np.linspace(0, 1, 12))
+
+        # define what is needed
         speedist = {}
-        distance = 0
+        distance = 0.0
+        x = []
+        y = []
 
-        for tp in activity['trackPoints']:
-
-            if tp.get('speed_kmh') is not None:
+        for tp in cutout:
+            if tp.get('distance') is not None:
                 distance += tp.get('distance')
+                kmh = tp.get('speed_kmh')
+                speedist.update({distance:kmh})
 
-                speedist[tp.get('speed_kmh')] = tp.get('distance')
-        print("distance:", distance)
-        print(speedist)
+        if speedist:
+            list = sorted(speedist.items())
+            x, y = zip(*list)
 
-        list = speedist.items()
-        x, y = zip(*list)
+        # set figure dimension
+        figsize_w = 9
+        figsize_h = 2
 
-        fig = plt.figure()
+        # instantiate the figure
+        fig = plt.figure(figsize=(figsize_w, figsize_h), dpi=300)
         canvas = FigureCanvas(fig)
-        ax1 = fig.add_subplot(2, 1, 1)
-        ax2 = ax1.twiny()
-        #plt.box(False)
-        #ax1.axis([0, 6, 0, 20])
 
-        ax1.tick_params(
-            axis='x',  # changes apply to the x-axis
-            which='minor',  # both major and minor ticks are affected
-            bottom='off',  # ticks along the bottom edge are off
-            top='on',  # ticks along the top edge are off
-            labelbottom='off')  # labels along the bottom edge are off
-        #ax2.set_xlim(ax1.get_xlim())
+        # create some space around axis labels
+        plt.subplots_adjust(bottom=0.3, left=0.15)
 
-        new_tick_locations = range(100)
-        ax2.set_xticks(new_tick_locations, minor=True)
-        #ax2.set_xticklabels(tick_function(new_tick_locations))
-        #ax2.set_xlabel(r"Modified x-axis: $1/(1+X)$")
+        # configure plot grid
+        plt.grid(True, 'major', 'both', ls='--', lw=.5, c='k', alpha=.15)
 
-        plt.plot(y, x, 'o-')
+        # disable axis box
+        plt.box(False)
+
+        # set label for x-axis
+        plt.xlabel("Distance (m)", labelpad=10)
+
+        # set label for y-axis
+        plt.ylabel("Velocity (km/h)", labelpad=10)
+
+        # create plot or name the shame (no sufficient data)
+        if len(x)>0 and len(y)>0:
+            plt.plot(x, y, '.-', color=color_list[utils_service.get_activity_color(currActivity)])
+        else:
+            fig.text(.25, .5, 'Oops, not enough data for generating a plot :( ', style='normal',
+                    bbox={'facecolor': 'red', 'alpha': 0.5, 'pad': 10})
+
         # prepare the response, setting Content-Type
         response = HttpResponse(content_type='image/svg+xml')
         # print the image on the response

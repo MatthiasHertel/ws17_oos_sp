@@ -166,3 +166,13 @@ class UtilsService:
             features.append(geojson)
 
         return features
+
+    def get_activity_color(self, activity):
+        if activity == 'walking':
+            return 3
+        if activity == 'cycling':
+            return 2
+        if activity == 'running':
+            return 1
+        else:
+            return None
