@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+{% load unit_conversion %}
+{% load humanize %}
 
 {% block content %}
 <br>
@@ -11,11 +13,10 @@
         You've been using Moves for <strong>{{ days }} days</strong>. <br>
         Your Timezone is: <strong> {{profile.profile.currentTimeZone.id }}</strong> <br>
         Your Tracking Device OS is: <strong> {{profile.profile.platform | upper}}</strong> <br><br>
-        Totals:<br>
-        Distance (Walking | Cycling | Transport) <strong> {{profile.totals.walking.distance}} | {{profile.totals.cycling.distance}} | {{profile.totals.transport.distance}}</strong><br>
-        Duration (Walking | Cycling | Transport) <strong> {{profile.totals.walking.duration}} | {{profile.totals.cycling.duration}} | {{profile.totals.transport.duration}}</strong><br>
-        Calories (Walking | Cycling ) <strong> {{profile.totals.walking.calories}} | {{profile.totals.cycling.calories}}</strong><br>
-        Steps (Walking) <strong> {{profile.totals.walking.steps}}</strong>
+        Distance (Walking | Cycling | Transport)<br> <strong> {{profile.totals.walking.distance|format_meters:"km"}} | {{profile.totals.cycling.distance|format_meters:"km"}} | {{profile.totals.transport.distance|format_meters:"km"}}</strong><br>
+        Duration (Walking | Cycling | Transport)<br> <strong> {{profile.totals.walking.duration|format_seconds}} | {{profile.totals.cycling.duration|format_seconds}} | {{profile.totals.transport.duration|format_seconds}}</strong><br>
+        Calories (Walking | Cycling)<br> <strong> {{profile.totals.walking.calories|intcomma}} | {{profile.totals.cycling.calories|intcomma}}</strong><br>
+        Steps (Walking)<br><strong> {{profile.totals.walking.steps|intword}}</strong>
       </p>
     </div>
   </div>
