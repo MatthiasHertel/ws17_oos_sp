@@ -38,11 +38,11 @@
               {% endif %}
               <tr>
                 <th>Calories (kJ)</th>
-                <td>{{ activity.calories }} ({{ activity.calories|calories_to_kj }})</td>
+                <td>{% if activity.calories %} {{ activity.calories }} ({{ activity.calories|calories_to_kj }}) {% endif %}</td>
               </tr>
               <tr>
                 <th>Watts</th>
-                <td>{{ activity.calories|calories_to_watts:activity.duration }}</td>
+                <td>{% if activity.calories %}{{ activity.calories|calories_to_watts:activity.duration }}{% endif %}</td>
               </tr>
               <tr>
                 <th>Duration</th>
