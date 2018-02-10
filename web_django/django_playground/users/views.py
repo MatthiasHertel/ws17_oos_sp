@@ -174,8 +174,6 @@ class UserActivityDetailView(LoginRequiredMixin, View):
         api_date = date.replace('-', '')
         activity = moves_service.get_activity_date(user, utils_service.make_date_from(api_date), int(index))
 
-        print(activity)
-
         return render(request, 'pages/detail.html', {
             'user': user,
             'activity': activity,

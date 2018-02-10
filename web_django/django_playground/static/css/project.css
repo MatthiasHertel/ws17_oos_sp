@@ -19,3 +19,8 @@
 [hidden][style="display: block;"] {
   display: block !important;
 }
+
+.info-row {
+  height: 100px;
+  margin: 50px;
+}

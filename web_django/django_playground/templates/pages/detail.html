@@ -13,88 +13,78 @@
 
 <div class="container">
   <div class="row">
-    <div class="col-md-12">
-        <div class="card">
-          <div class="card-header">
-            <strong>{{ activity.group }}</strong>
-            <img class="card-img-top" src="mpl_detail.svg" alt="Card image cap">
-          </div>
+    <div class="col-md-6">
+      {{activity.group}}, {{ activity.startTime }}<br>
+    </div>
+    <div class="col-md-6">
+      <div class="row">
+        <div class="col-md-3"><h4>{{ activity.distance|format_meters:"km" }}<br><small>Distance</small></h4></div>
+        <div class="col-md-3"><h4>{{ activity.duration|format_seconds }}<br><small>Duration</small></h4></div>
+        <div class="col-md-3"><h4>{{ activity.weather.currently.summary }}<br><small>Conditions</small></h4></div>
+        <br>
+      </div>
+      <div class="row">
+        {% if activity.calories %}
+        <div class="col-md-3">
+          <h5>{{ activity.calories|calories_to_watts:activity.duration }}</h5>
+        </div>
+        <div class="col-md-3">
+          <h5>{{ activity.calories }} kcal</h5>
+        </div>
+        <div class="col-md-3">
+          <h5>{{ activity.calories|calories_to_kj }}</h5>
+        </div>
+        {% endif %}
+      </div>
+      {% if activity.max_speed > 0 %}
+      <div class="row">
+        <div class="col-md-3">Speed</div>
+        <div class="col-md-3">Average<br>{{ activity.avg_speed |floatformat:2 }} Km/hh</div>
+        <div class="col-md-3">Max<br>{{ activity.max_speed |floatformat:2 }} Km/h</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+    <div class="row">
+      <div class="col-md-12">
+        {% if 'weather' in activity %}
           <div class="card">
-            <table class="table table-striped table-bordered" style="width:100%">
+            <div class="card-header">
+              <strong>Weather Conditions</strong>
+            </div>
+            <table class="table table-striped table-bordered">
+              <thead>
+              <th>Summary</th>
+              <th>Temperature (Actual/Feels Like)</th>
+              <th>Wind Speed</th>
+              <th>Humidity</th>
+              <th>Visibility</th>
+              </thead>
               <tbody>
               <tr>
-                <th>Distance</th>
-                <td>{{ activity.distance|format_meters:"km" }}</td>
-              </tr>
-              {% if activity.max_speed > 0 %}
-              <tr>
-                <th>Max. Speed</th>
-                <td>{{ activity.max_speed |floatformat:2 }} kmh</td>
-              </tr>
-              <tr>
-                <th>Avg. Speed</th>
-                <td>{{ activity.avg_speed |floatformat:2 }} kmh</td>
-              </tr>
-              {% endif %}
-              <tr>
-                <th>Calories (kJ)</th>
-                <td>{% if activity.calories %} {{ activity.calories }} ({{ activity.calories|calories_to_kj }}) {% endif %}</td>
-              </tr>
-              <tr>
-                <th>Watts</th>
-                <td>{% if activity.calories %}{{ activity.calories|calories_to_watts:activity.duration }}{% endif %}</td>
-              </tr>
-              <tr>
-                <th>Duration</th>
-                <td>{{ activity.duration|format_seconds }}</td>
-              </tr>
-              <tr>
-                <th>Start</th>
-                <td>{{ activity.startTime }}</td>
-              </tr>
-              <tr>
-                <th>End</th>
-                <td>{{ activity.endTime }}</td>
+                <td>{{ activity.weather.currently.summary }}</td>
+                <td>{{ activity.weather.currently.temperature }} &#8451; / {{ activity.weather.currently.apparentTemperature }} &#8451;</td>
+                <td>{{ activity.weather.currently.windSpeed|format_miles:"km" }}h</td>
+                <td>{% widthratio activity.weather.currently.humidity 1 100 %} %</td>
+                <td>{{ activity.weather.currently.visibility|format_miles:"km" }}</td>
               </tr>
               </tbody>
             </table>
           </div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <strong>Speed Analysis</strong>
+          </div>
+        <img class="card-img-top" src="mpl_detail.svg" alt="Card image cap">
         </div>
       </div>
-    {% if 'weather' in activity %}
-    <div class="card">
-      <div class="card-header">
-        <strong>Weather Conditions</strong>
-      </div>
-      <table class="table table-striped table-bordered">
-        <tbody>
-        <tr>
-          <th>Summary</th>
-          <td>{{ activity.weather.currently.summary }}</td>
-        </tr>
-        <tr>
-          <th>Temperature (Actual/Feels Like)</th>
-          <td>{{ activity.weather.currently.temperature }} &#8451; / {{ activity.weather.currently.apparentTemperature }} &#8451;</td>
-        </tr>
-        <tr>
-          <th>Wind Speed</th>
-          <td>{{ activity.weather.currently.windSpeed|format_miles:"km" }}h</td>
-        </tr>
-        <tr>
-          <th>Humidity</th>
-          <td>{% widthratio activity.weather.currently.humidity 1 100 %} %</td>
-        </tr>
-        <tr>
-          <th>Visibility</th>
-          <td>{{ activity.weather.currently.visibility|format_miles:"km" }}</td>
-        </tr>
-        </tbody>
-      </table>
     </div>
-  {% endif %}
-  </div> {# row end #}
-</div> {# container end #}
-
+  </div>
   <!-- Button: back to previous view -->
   <div>
     <a class="btn btn-secondary" href="/users/map/{{ date }}" role="button" style="margin-top: 1em"><< Map overview</a>
