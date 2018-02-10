@@ -168,6 +168,8 @@ class UtilsService:
         return features
 
     def get_activity_color(self, activity):
+        if activity == 'transport':
+            return 4
         if activity == 'walking':
             return 3
         if activity == 'cycling':
