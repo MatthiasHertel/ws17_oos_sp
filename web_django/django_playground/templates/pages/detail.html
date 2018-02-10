@@ -29,11 +29,11 @@
               {% if activity.max_speed > 0 %}
               <tr>
                 <th>Max. Speed</th>
-                <td>{{ activity.max_speed }} kmh</td>
+                <td>{{ activity.max_speed |floatformat:2 }} kmh</td>
               </tr>
               <tr>
                 <th>Avg. Speed</th>
-                <td>{{ activity.avg_speed }} kmh</td>
+                <td>{{ activity.avg_speed |floatformat:2 }} kmh</td>
               </tr>
               {% endif %}
               <tr>
