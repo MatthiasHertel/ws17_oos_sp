@@ -14,7 +14,7 @@
 <div class="container">
   <div class="row">
     <div class="col-md-6">
-      {{activity.group}}, {{ activity.startTime }}<br>
+      <h3>{{activity.group}} <small>{{ activity.startTime }}</small></h3>
     </div>
     <div class="col-md-6">
       <div class="row">
@@ -43,6 +43,16 @@
         <div class="col-md-3">Max<br>{{ activity.max_speed |floatformat:2 }} Km/h</div>
       </div>
       {% endif %}
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <strong>Route</strong>
+        </div>
+        <img class="card-img-top" src="mpl_detail_map.png">
+      </div>
     </div>
   </div>
     <div class="row">
@@ -80,7 +90,7 @@
           <div class="card-header">
             <strong>Speed Analysis</strong>
           </div>
-        <img class="card-img-top" src="mpl_detail.svg" alt="Card image cap">
+          <img class="card-img-top" src="mpl_detail.svg" alt="Card image cap">
         </div>
       </div>
     </div>

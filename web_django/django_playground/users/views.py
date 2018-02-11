@@ -19,11 +19,12 @@ matplotlib.use('Agg')
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter
-
 import matplotlib.pyplot as plt
 import numpy as np
+import smopy
 
 logger = logging.getLogger(__name__)
+
 
 class UserDetailView(LoginRequiredMixin, DetailView):
     model = User
@@ -361,4 +362,27 @@ class UserActivityMplDetailView(LoginRequiredMixin, View):
         # print the image on the response
         canvas.print_figure(response, format='svg')
         # and return it
+        return response
+
+
+class UserActivityDetailMapView(LoginRequiredMixin, View):
+    """returns a matplot activity-detail image"""
+    def get(self, request, date, index, *args, **kwargs):
+        user = User.objects.get(username=request.user.username)
+        api_date = date.replace('-', '')
+        activity = moves_service.get_activity_date(user, utils_service.make_date_from(api_date), int(index))
+        bounds = [13.317742,52.489656,13.551044,52.55743]
+
+        maxY = bounds[3]
+        maxX = bounds[2]
+        minY = bounds[1]
+        minX = bounds[0]
+        map = smopy.Map((minY, minX, maxY, maxX), z=14)
+        X, Y = map.to_pixels(51.75,14.325)
+        ax = map.show_mpl(figsize=(18.5, 10.5))
+        ax.plot(X, Y, 'or', ms=50, mew=2)
+        canvas = FigureCanvas(ax.get_figure())
+
+        response = HttpResponse(content_type='image/png')
+        canvas.print_figure(response, format='png')
         return response
