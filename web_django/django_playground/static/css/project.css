@@ -24,3 +24,18 @@
   height: 100px;
   margin: 50px;
 }
+
+/* custom styles */
+h1 {
+  margin: .5em 0 0 0;
+}
+
+div.col-md-12 {
+  margin: 1em 0 0 0;
+}
+
+.mpl-pie {
+  max-width: 274.5px;
+  align-self: center;
+
+}
