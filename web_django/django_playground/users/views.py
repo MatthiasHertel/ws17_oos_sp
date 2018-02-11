@@ -378,8 +378,9 @@ class UserActivityMplPieView(LoginRequiredMixin, View):
         user = User.objects.get(username=request.user.username)
         summary = moves_service.get_summary_past_days(user, int(days_to_pie))
 
-        #print(summary)
-        distances = {'walking':0, 'cycling':0, 'running':0, 'transport':0}
+
+        #distances = {'walking':0, 'cycling':0, 'running':0, 'transport':0}
+        distances = {'walking':0, 'cycling':0, 'running':0}
 
         # get labels and data for the pie
         for key in distances:
