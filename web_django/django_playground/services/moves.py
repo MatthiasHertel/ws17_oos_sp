@@ -207,8 +207,6 @@ class MovesService:
             for segment in data[0]['segments']:
                 if 'activities' in segment:
                     for activity in segment['activities']:
-                        activity['startTime'] = self.create_date(activity['startTime'])
-                        activity['endTime'] = self.create_date(activity['endTime'])
                         activities.append(activity)
 
         return sorted(activities, key=itemgetter('startTime'))
