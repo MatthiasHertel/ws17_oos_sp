@@ -431,6 +431,7 @@ class UserActivityMplPieView(LoginRequiredMixin, View):
 
 class UserActivityDetailMapView(LoginRequiredMixin, View):
     """returns a matplot activity-detail image"""
+    @never_cache
     def get(self, request, date, index, *args, **kwargs):
         user = User.objects.get(username=request.user.username)
         api_date = date.replace('-', '')
