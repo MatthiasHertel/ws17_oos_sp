@@ -432,16 +432,17 @@ class UserActivityDetailMapView(LoginRequiredMixin, View):
         user = User.objects.get(username=request.user.username)
         api_date = date.replace('-', '')
         activity = moves_service.get_activity_date(user, utils_service.make_date_from(api_date), int(index))
-        bounds = [13.317742,52.489656,13.551044,52.55743]
+        bounds = [13.373778,52.499863,13.4762,52.535617]
 
         maxY = bounds[3]
         maxX = bounds[2]
         minY = bounds[1]
         minX = bounds[0]
-        map = smopy.Map((minY, minX, maxY, maxX), z=14)
-        X, Y = map.to_pixels(51.75,14.325)
-        ax = map.show_mpl(figsize=(18.5, 10.5))
-        ax.plot(X, Y, 'or', ms=50, mew=2)
+        map = smopy.Map((minY, minX, maxY, maxX), z=15)
+        ax = map.show_mpl(figsize=(20, 10))
+        for track_point in activity['trackPoints']:
+            X, Y = map.to_pixels(track_point['lat'], track_point['lon'])
+            ax.plot(X, Y, 'or', ms=2, mew=2)
         canvas = FigureCanvas(ax.get_figure())
 
         response = HttpResponse(content_type='image/png')
