@@ -65,8 +65,8 @@ urlpatterns = [
     url(regex=r'^geojson/(?P<date>\d{4}-\d{2}-\d{2})/$', view=views.UserActivityGeoJsonView.as_view(), name='geojson'),
     url(regex=r'^mpl_recent.svg/(?P<date>\d{4}\d{2})/$', view=views.UserActivityMplView.as_view(), name='mplimage'),
     url(regex=r'^mpl_recent.svg$', view=views.UserActivityMplView.as_view(), name='mpl_recent'),
-    url(regex=r'^mpl_pie.svg$', view=views.UserActivityMplPieView.as_view(), name='mpl_pie'),
-    url(regex=r'^mpl_pie.svg/(?P<days_to_pie>\d{2})/$', view=views.UserActivityMplPieView.as_view(), name='mpl_pie'),
+    url(regex=r'^mpl_pie.svg/(?P<dayspie>\d{2})/$', view=views.UserActivityMplPieView.as_view(), name='mpl_pie_day'),
+    url(regex=r'^mpl_pie.svg/(?P<datepie>\d{4}-\d{2}-\d{2})/$', view=views.UserActivityMplPieView.as_view(), name='mpl_pie_date'),
 
 ]
 
