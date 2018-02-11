@@ -17,47 +17,63 @@
 
     /*#map { position:absolute; top:60; bottom:0; width:100%; height:100%;}*/
     #map {
-    height: 600px;
+    height: 350px;
 }
 
 
 
 {% endblock %}
 
-{% block content %}
-<h1>
-
-</h1>
-<div class="container">
+{% block content-pre %}
+<div class="container-fluid">
+  <br>
   <div class="row">
-    <div class="col-md-9">
+    <div class="col-md-4">
       <div class="card">
         <div class="card-header">
-          <strong>Map-view for date: {{date}}</strong>
+          <strong>Map View </strong>
         </div>
-        <div id='map'></div>
+
+        <div class="card-block" style="padding:10px">
+          <div id='map'></div>
+        </div>
+      </div>
+      <br>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-block" style="padding:10px">
+              <h1 class="card-title">
+                {{view_date}}
+              </h1>
+              <div>
+                <a class="btn btn-secondary" href="/users/moves-data" role="button" style="margin: 1em 0 1em 0"><< Overview</a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div class="col-md-6">
+          <div class="card" id="mpl-pie">
+            <div class="card-header">
+              <strong>Activity Pie</strong>
+            </div>
+            <img class="card-img-top mpl-pie" src="/users/mpl_pie.svg/{{ date }}" alt="Card image (activity as pie diagram)">
+
+
+
+          </div>
+        </div>
       </div>
     </div>
-    <div class="col-md-3">
-      <div class="card" id="mpl-pie">
-        <div class="card-header">
-          <strong>Activity Pie</strong>
-        </div>
-        <img class="card-img-top mpl-pie" src="/users/mpl_pie.svg/{{ date }}" alt="Card image (activity as pie diagram)">
-          <br>
-     </div>
-    </div>
-  </div>
-  <div class="row">
-    <!-- overview table -->
-    <div class="col-md-12">
+    <div class="col-md-8">
       <div class="card">
         <div class="card-header">
           <strong>Daily Activities</strong>
         </div>
-        <div class="card">
-          <br>
-          <table id="table_id" class="table table-striped table-bordered" style="width:100%">
+        <div class="card" style="padding:10px">
+
+          <table id="table_id" class="table table-striped table-bordered" style="width:100%;">
             <thead>
             <tr>
               <th>Type</th>
@@ -97,10 +113,11 @@
             {% endfor %}
             </tbody>
           </table>
-          <br>
         </div>
       </div>
     </div>
+  </div>
+
 </div>
 <script>
     var map = L.mapbox.map('map', 'paulmison.gofl3m15')
@@ -129,10 +146,7 @@
     //     $.getJSON(geojson, draw_geojson);
     // }
 </script>
-  </div>
-  <!-- Button: back to month view -->
-  <div>
-    <a class="btn btn-secondary" href="/users/moves-data" role="button" style="margin: 1em 0 1em 0"><< Last 30 days</a>
-  </div>
 
-{% endblock content %}
+
+
+{% endblock content-pre %}

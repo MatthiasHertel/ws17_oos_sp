@@ -39,7 +39,7 @@
         <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
-        <a class="navbar-brand" href="{% url 'home' %}">django playground</a>
+        <a class="navbar-brand" href="{% url 'home' %}">MoDaVi - Moves Data Visualizer</a>
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav mr-auto">
@@ -83,10 +83,13 @@
       {% endif %}
 
       {% block content %}
-        <p>Use this document as a way to quick start any new project!!!</p>
+        <!-- <p>Use this document as a way to quick start any new project!!!</p> -->
       {% endblock content %}
 
     </div> <!-- /container -->
+    {% block content-pre %}
+      <!-- <p>Use this document as a way to quick start any new project!!!</p> -->
+    {% endblock content-pre %}
 
     {% block modal %}{% endblock modal %}
 

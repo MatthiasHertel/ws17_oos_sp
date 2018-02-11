@@ -187,11 +187,13 @@ class UserActivityDetailView(LoginRequiredMixin, View):
 class UserActivityMapView(LoginRequiredMixin, View):
     def get(self, request, date, *args, **kwargs):
         api_date = date.replace('-', '')
+        view_date = utils_service.make_date_from(api_date)
         user = User.objects.get(username=request.user.username)
         activities = moves_service.get_activities_date(user, utils_service.make_date_from(api_date))
 
         return render(request, 'pages/map.html', {
             'date': date,
+            'view_date': view_date,
             'activities': activities
         })
 
