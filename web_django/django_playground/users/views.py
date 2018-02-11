@@ -227,6 +227,7 @@ class UserActivityMplView(LoginRequiredMixin, View):
         # init figure & canvas
         plt.close()
         fig = plt.figure()
+        fig.patch.set_alpha(0)
         canvas = FigureCanvas(fig)
 
         # color map for coloring diagram-stuff
@@ -267,24 +268,26 @@ class UserActivityMplView(LoginRequiredMixin, View):
 
             # do the plotting
             if np.sum(y) > 0:
-                plt.plot(x, y, color=color_list[utils_service.get_activity_color(activity)], label=activity)
+                plt.plot(x, y, 'o-', color=color_list[utils_service.get_activity_color(activity)], label=activity)
 
 
         # set plot title
-        plt.title("Recent Activities")
+        plt.title("Recent Activities", color='white', fontweight='bold')
 
         # set label for x-axis
-        plt.xlabel('Date', labelpad=10)
+        plt.xlabel('Date', labelpad=10, color='white', fontweight='bold')
 
         # set label for y-axis
-        plt.ylabel('Distances (m)', labelpad=10)
+        plt.ylabel('Distances (m)', labelpad=10, color='white', fontweight='bold')
 
         # settings for ticks on x-axis
-        plt.xticks(fontsize=8, rotation=33)
+        plt.xticks(fontsize=10, rotation=33, color='white')
+        plt.yticks(fontsize=10, color='white')
 
         # misc settings
+        plt.tick_params('both', color='white')
         plt.subplots_adjust(bottom=0.2, left=0.15)
-        plt.grid(True, 'major', 'both', ls='--', lw=.5, c='k', alpha=.15)
+        plt.grid(True, 'major', 'both', ls='--', lw=.5, c='w', alpha=.25)
         plt.box(False)
         # enable legend
         plt.legend()
@@ -338,22 +341,28 @@ class UserActivityMplDetailView(LoginRequiredMixin, View):
         # instantiate the figure
         plt.close()
         fig = plt.figure(figsize=(figsize_w, figsize_h), dpi=300)
+        fig.patch.set_alpha(0)
         canvas = FigureCanvas(fig)
 
         # create some space around axis labels
         plt.subplots_adjust(bottom=0.3, left=0.15)
 
         # configure plot grid
-        plt.grid(True, 'major', 'both', ls='--', lw=.5, c='k', alpha=.15)
+        plt.grid(True, 'major', 'both', ls='--', lw=.5, c='w', alpha=.25)
 
         # disable axis box
         plt.box(False)
 
         # set label for x-axis
-        plt.xlabel("Distance (m)", labelpad=10)
+        plt.xlabel("Distance (m)", labelpad=10, color='w')
 
         # set label for y-axis
-        plt.ylabel("Velocity (km/h)", labelpad=10)
+        plt.ylabel("Velocity (km/h)", labelpad=10, color='w')
+
+        # misc settings
+        plt.tick_params('both', color='w')
+        plt.xticks(color='w')
+        plt.yticks(color='w')
 
         # create plot or name the shame (no sufficient data)
         if len(x)>0 and len(y)>0:
@@ -386,7 +395,6 @@ class UserActivityMplPieView(LoginRequiredMixin, View):
         user = User.objects.get(username=request.user.username)
 
         if datepie is not None:
-            print("date to pie PROCESSING!")
             api_date = datepie.replace('-', '')
             summary = moves_service.get_storyline_date(user, utils_service.make_date_from(api_date))
         else:
@@ -411,24 +419,25 @@ class UserActivityMplPieView(LoginRequiredMixin, View):
         # init figure & canvas
         plt.close()
         fig = plt.figure(figsize=(3,4))
+        fig.patch.set_alpha(0)
         canvas = FigureCanvas(fig)
 
         # get the colors (wtf ...)
         cols = [color_list[utils_service.get_activity_color(label)] for label in labels]
 
         # draw the legend by hand, because display looks shitty for small values (even more wtf ...)
-        y = -1.65
+        y = -1.5
         whole = sum(sizes)
 
         for key in distances.items():
             if key[1] > 0:
                 col = color_list[utils_service.get_activity_color(key[0])]
-                legend_activity = str(key[0]) + ": " + str(round(key[1]/(whole/100),2)) + "% "
-                plt.text(.20, y, legend_activity, ha='right', rotation=0, wrap=True, color=col)
-            y+=0.16
+                legend_activity = str(key[0]) + ": " + str(round(key[1]/(whole/100),2)) + "%"
+                plt.text(0.2, y, legend_activity, va='top', ha='right', rotation=0, wrap=True, color=col)
+            y+=0.13
 
         # set pie config
-        plt.pie(sizes, labels=None, autopct=None, shadow=True, startangle=90, colors=cols, center=(-0.8,0.05))
+        plt.pie(sizes, labels=None, autopct=None, shadow=True, startangle=90, colors=cols, center=(-0.8,0))
 
         # misc settings
         plt.subplots_adjust(top=0.3, bottom=0.25)
@@ -436,7 +445,7 @@ class UserActivityMplPieView(LoginRequiredMixin, View):
         plt.tight_layout()
         #plt.legend()
 
-        plt.plot()
+        plt.plot(transparent=True)
 
         # prepare the response, setting Content-Type
         response = HttpResponse(content_type='image/svg+xml')
