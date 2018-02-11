@@ -225,7 +225,7 @@ class UserActivityMplView(LoginRequiredMixin, View):
 
         # color map for coloring diagram-stuff
         # ref: https://matplotlib.org/examples/color/colormaps_reference.html
-        color_list = plt.cm.tab10(np.linspace(0, 1, 12))
+        color_list = plt.cm.tab10(np.linspace(0, 1, 24))
 
         user = User.objects.get(username=request.user.username)
         if date is not None:
@@ -235,9 +235,7 @@ class UserActivityMplView(LoginRequiredMixin, View):
             summary = moves_service.get_summary_past_days(user, 30)
 
         summary.reverse()
-        #print(summary)
         activities = { 1: 'walking', 2: 'running', 3: 'cycling' }
-        activity = ''
 
         for act in activities:
             x = []
@@ -260,7 +258,6 @@ class UserActivityMplView(LoginRequiredMixin, View):
                 list = sorted(dailydist.items())
                 x, y = zip(*list)
                 x = [utils_service.make_date_from(key) for key in x]
-                #x = [str(key) for key in x]
 
                 # do the plotting
                 if np.sum(y) > 0:
@@ -309,7 +306,7 @@ class UserActivityMplDetailView(LoginRequiredMixin, View):
 
         # color map for coloring diagram-stuff
         # ref: https://matplotlib.org/examples/color/colormaps_reference.html
-        color_list = plt.cm.tab10(np.linspace(0, 1, 12))
+        color_list = plt.cm.tab10(np.linspace(0, 1, 24))
 
         # define what is needed
         speedist = {}
@@ -317,6 +314,7 @@ class UserActivityMplDetailView(LoginRequiredMixin, View):
         x = []
         y = []
 
+        # extract data
         for tp in cutout:
             if tp.get('distance') is not None:
                 distance += tp.get('distance')
@@ -357,6 +355,69 @@ class UserActivityMplDetailView(LoginRequiredMixin, View):
             fig.text(.25, .5, 'Oops, not enough data for generating a plot :( ', style='normal',
                     bbox={'facecolor': 'red', 'alpha': 0.5, 'pad': 10})
 
+        # prepare the response, setting Content-Type
+        response = HttpResponse(content_type='image/svg+xml')
+        # print the image on the response
+        canvas.print_figure(response, format='svg')
+        # and return it
+        return response
+
+
+class UserActivityMplPieView(LoginRequiredMixin, View):
+    """returns a matplot pie chart image"""
+
+    def get(self, request, days_to_pie=10, *args, **kwargs):
+        # init figure & canvas
+        fig = plt.figure(figsize=(3,4))
+        canvas = FigureCanvas(fig)
+
+        # color map for coloring diagram-stuff
+        # ref: https://matplotlib.org/examples/color/colormaps_reference.html
+        color_list = plt.cm.tab10(np.linspace(0, 1, 24))
+
+        user = User.objects.get(username=request.user.username)
+        summary = moves_service.get_summary_past_days(user, int(days_to_pie))
+
+
+        #distances = {'walking':0, 'cycling':0, 'running':0, 'transport':0}
+        distances = {'walking':0, 'cycling':0, 'running':0}
+
+        # get labels and data for the pie
+        for key in distances:
+            #print(key)
+            for segments in summary:
+                for element in segments['summary']:
+                    if element['activity'] == key:
+                        #print(element)
+                        distances[key] += element['distance']
+
+        labels = [key for key, value in distances.items() if value > 0]
+        sizes = [v for k,v in distances.items() if k in labels]
+
+        # get the colors (wtf ...)
+        cols = [color_list[utils_service.get_activity_color(label)] for label in labels]
+
+        # draw the legend by hand, because display looks shitty for small values (even more wtf ...)
+        y = -1.65
+        whole = sum(sizes)
+
+        for key in distances.items():
+            if key[1] > 0:
+                col = color_list[utils_service.get_activity_color(key[0])]
+                legend_activity = str(key[0]) + ": " + str(round(key[1]/(whole/100),2)) + "% "
+                plt.text(.20, y, legend_activity, ha='right', rotation=0, wrap=False, color=col)
+            y+=0.14
+
+        # set pie config
+        plt.pie(sizes, labels=None, autopct=None, shadow=True, startangle=90, colors=cols, center=(-1,-0.05))
+
+        # misc settings
+        plt.subplots_adjust(top=0.1, bottom=0.05)
+        plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+        plt.tight_layout()
+        #plt.legend()
+
+        plt.plot()
         # prepare the response, setting Content-Type
         response = HttpResponse(content_type='image/svg+xml')
         # print the image on the response
