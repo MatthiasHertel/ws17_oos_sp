@@ -219,6 +219,7 @@ class UserActivityMplView(LoginRequiredMixin, View):
         """returns a matplot activity image"""
 
         # init figure & canvas
+        plt.close()
         fig = plt.figure()
         canvas = FigureCanvas(fig)
 
@@ -233,15 +234,13 @@ class UserActivityMplView(LoginRequiredMixin, View):
         else:
             summary = moves_service.get_summary_past_days(user, 30)
 
-        summary.reverse()
         activities = { 1: 'walking', 2: 'running', 3: 'cycling' }
-
+        #print(summary)
         for act in activities:
             x = []
             y = []
             dailydist = {}
             dailydist.clear()
-
             activity = activities[act]
 
             for day in summary:
@@ -253,17 +252,14 @@ class UserActivityMplView(LoginRequiredMixin, View):
                     if element['activity'] == activity:
                         dailydist[day['date']] = element['distance']
 
-            try:
-                list = sorted(dailydist.items())
-                x, y = zip(*list)
-                x = [utils_service.make_date_from(key) for key in x]
+            list = sorted(dailydist.items())
+            x, y = zip(*list)
+            x = [utils_service.make_date_from(key) for key in x]
 
-                # do the plotting
-                if np.sum(y) > 0:
-                    plt.plot(x, y, 'o-', color=color_list[utils_service.get_activity_color(activity)], label=activity)
+            # do the plotting
+            if np.sum(y) > 0:
+                plt.plot(x, y, color=color_list[utils_service.get_activity_color(activity)], label=activity)
 
-            except ValueError as err:
-                print("Value Error", err)
 
         # set plot title
         plt.title("Recent Activities")
@@ -300,7 +296,7 @@ class UserActivityMplDetailView(LoginRequiredMixin, View):
 
         # extracting useful data
         currActivity = activity['activity']
-        print(currActivity)
+        #print(currActivity)
         cutout = activity['trackPoints']
 
         # color map for coloring diagram-stuff
@@ -329,6 +325,7 @@ class UserActivityMplDetailView(LoginRequiredMixin, View):
         figsize_h = 2
 
         # instantiate the figure
+        plt.close()
         fig = plt.figure(figsize=(figsize_w, figsize_h), dpi=300)
         canvas = FigureCanvas(fig)
 
@@ -364,21 +361,21 @@ class UserActivityMplDetailView(LoginRequiredMixin, View):
 class UserActivityMplPieView(LoginRequiredMixin, View):
     """returns a matplot pie chart image"""
 
-    def get(self, request, days_to_pie=10, *args, **kwargs):
-        # init figure & canvas
-        fig = plt.figure(figsize=(3,4))
-        canvas = FigureCanvas(fig)
-
-        # color map for coloring diagram-stuff
-        # ref: https://matplotlib.org/examples/color/colormaps_reference.html
-        color_list = plt.cm.tab10(np.linspace(0, 1, 24))
+    def get(self, request, datepie=None, dayspie=10, *args, **kwargs):
 
         user = User.objects.get(username=request.user.username)
-        summary = moves_service.get_summary_past_days(user, int(days_to_pie))
 
+        if datepie is not None:
+            print("date to pie PROCESSING!")
+            api_date = datepie.replace('-', '')
+            summary = moves_service.get_storyline_date(user, utils_service.make_date_from(api_date))
+        else:
+            summary = moves_service.get_summary_past_days(user, int(dayspie))
+
+        #print(summary)
 
         #distances = {'walking':0, 'cycling':0, 'running':0, 'transport':0}
-        distances = {'walking':0, 'cycling':0, 'running':0}
+        distances = {'walking':0, 'cycling':0, 'running':0, 'transport':0}
 
         # get labels and data for the pie
         for key in distances:
@@ -392,6 +389,15 @@ class UserActivityMplPieView(LoginRequiredMixin, View):
         labels = [key for key, value in distances.items() if value > 0]
         sizes = [v for k,v in distances.items() if k in labels]
 
+        # color map for coloring diagram-stuff
+        # ref: https://matplotlib.org/examples/color/colormaps_reference.html
+        color_list = plt.cm.tab10(np.linspace(0, 1, 24))
+
+        # init figure & canvas
+        plt.close()
+        fig = plt.figure(figsize=(3,4))
+        canvas = FigureCanvas(fig)
+
         # get the colors (wtf ...)
         cols = [color_list[utils_service.get_activity_color(label)] for label in labels]
 
@@ -404,18 +410,19 @@ class UserActivityMplPieView(LoginRequiredMixin, View):
                 col = color_list[utils_service.get_activity_color(key[0])]
                 legend_activity = str(key[0]) + ": " + str(round(key[1]/(whole/100),2)) + "% "
                 plt.text(.20, y, legend_activity, ha='right', rotation=0, wrap=False, color=col)
-            y+=0.14
+            y+=0.16
 
         # set pie config
-        plt.pie(sizes, labels=None, autopct=None, shadow=True, startangle=90, colors=cols, center=(-1,-0.05))
+        plt.pie(sizes, labels=None, autopct=None, shadow=True, startangle=90, colors=cols, center=(-0.8,0.05))
 
         # misc settings
-        plt.subplots_adjust(top=0.1, bottom=0.05)
+        plt.subplots_adjust(top=0.3, bottom=0.15)
         plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
         plt.tight_layout()
         #plt.legend()
 
         plt.plot()
+
         # prepare the response, setting Content-Type
         response = HttpResponse(content_type='image/svg+xml')
         # print the image on the response

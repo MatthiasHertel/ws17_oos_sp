@@ -26,12 +26,26 @@
 
 {% block content %}
 <h1>
-  map view for date: {{date}}
+
 </h1>
 <div class="container">
   <div class="row">
-    <div class="col-md-12">
-      <div id='map'></div>
+    <div class="col-md-9">
+      <div class="card">
+        <div class="card-header">
+          <strong>Map-view for date: {{date}}</strong>
+        </div>
+        <div id='map'></div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card" id="mpl-pie">
+        <div class="card-header">
+          <strong>Activity Pie</strong>
+        </div>
+        <img class="card-img-top mpl-pie" src="/users/mpl_pie.svg/{{ date }}" alt="Card image (activity as pie diagram)">
+          <br>
+     </div>
     </div>
   </div>
   <div class="row">
@@ -115,7 +129,7 @@
     //     $.getJSON(geojson, draw_geojson);
     // }
 </script>
-
+  </div>
   <!-- Button: back to month view -->
   <div>
     <a class="btn btn-secondary" href="/users/moves-data" role="button" style="margin: 1em 0 1em 0"><< Last 30 days</a>
