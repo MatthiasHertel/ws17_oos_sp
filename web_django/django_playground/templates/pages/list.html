@@ -73,7 +73,7 @@
                       </a>
                     </td>
                     <td class="summary">
-                      {{day.summary.walking}}
+                      {{day.summary.walking}}{% if day.summary.cycling %}, {{day.summary.cycling}}{% endif %}{% if day.summary.transport%}, {{day.summary.tansport}}{% endif %}
                     </td>
                     <td>
                       <a href="geojson/{{ day.dateObj|date:'Y-m-d' }}" title="">

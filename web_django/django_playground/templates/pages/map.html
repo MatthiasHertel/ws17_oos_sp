@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+{% load unit_conversion %}
+
 {% block head %}
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' />
 
@@ -92,19 +94,19 @@
                   {{ activity.group }}
                 </td>
                 <td class="summary">
-                  {{ activity.distance }}
+                  {{ activity.distance|format_meters:"km" }}
                 </td>
                 <td>
                   {{ activity.calories }}
                 </td>
                 <td>
-                  {{ activity.duration }}
+                  {{ activity.duration|format_seconds }}
                 </td>
                 <td>
-                  {{ activity.startTime }}
+                  {{ activity.startTime|datestring_to_date }}
                 </td>
                 <td>
-                  {{ activity.endTime }}
+                  {{ activity.endTime|datestring_to_date }}
                 </td>
                 <td>
                   <a class="btn btn-primary" href="{% url 'users:detail' date=date index=forloop.counter0 %}" role="button">Details</a>
