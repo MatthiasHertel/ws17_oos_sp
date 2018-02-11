@@ -8,21 +8,21 @@ register = template.Library()
 @register.filter(name='format_meters')
 def format_meters(value, unit):
     if unit == 'km':
-        return '{:.0f} km'.format(Distance(m=value).km)
+        return '{:.2f} km'.format(Distance(m=value).km)
 
     if unit == 'mi':
-        return '{:.0f} miles'.format(Distance(m=value).mi)
+        return '{:.2f} miles'.format(Distance(m=value).mi)
 
-    return '{:.0f} meters'.format(Distance(m=value).m)
+    return '{:.2f} meters'.format(Distance(m=value).m)
 
 
 @register.filter(name='format_miles')
 def format_miles(value, unit):
     if unit == 'km':
-        return '{:.0f} km'.format(Distance(mi=value).km)
+        return '{:.2f} km'.format(Distance(mi=value).km)
 
     if unit == 'm':
-        return '{:.0f} meters'.format(Distance(mi=value).m)
+        return '{:.2f} meters'.format(Distance(mi=value).m)
 
     return Distance(mi=value).m
 

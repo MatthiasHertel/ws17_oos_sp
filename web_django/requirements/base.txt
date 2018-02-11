@@ -51,4 +51,3 @@ matplotlib==2.1.1
 numpy==1.14.0
 channels==1.1.8
 asgi-redis==1.4.3
-smopy==0.0.6
