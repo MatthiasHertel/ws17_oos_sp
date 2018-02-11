@@ -169,10 +169,12 @@ class UtilsService:
 
     def get_activity_color(self, activity):
         if activity == 'walking':
-            return 3
+            return 5
         if activity == 'cycling':
             return 2
         if activity == 'running':
-            return 1
+            return 3
+        if activity == 'transport':
+            return 7
         else:
             return None
