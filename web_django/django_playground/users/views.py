@@ -257,9 +257,12 @@ class UserActivityMplView(LoginRequiredMixin, View):
                     if element['activity'] == activity:
                         dailydist[day['date']] = element['distance']
 
-            list = sorted(dailydist.items())
-            x, y = zip(*list)
-            x = [utils_service.make_date_from(key) for key in x]
+            if dailydist:
+                list = sorted(dailydist.items())
+                x, y = zip(*list)
+                x = [utils_service.make_date_from(key) for key in x]
+            else:
+                continue
 
             # do the plotting
             if np.sum(y) > 0:
@@ -291,6 +294,8 @@ class UserActivityMplView(LoginRequiredMixin, View):
         canvas.print_figure(response, format='svg')
         # and return it
         return response
+
+
 class UserActivityMplDetailView(LoginRequiredMixin, View):
     """returns a matplot activity-detail image"""
     @never_cache
@@ -386,18 +391,13 @@ class UserActivityMplPieView(LoginRequiredMixin, View):
         else:
             summary = moves_service.get_summary_past_days(user, int(dayspie))
 
-        #print(summary)
-
-        #distances = {'walking':0, 'cycling':0, 'running':0, 'transport':0}
         distances = {'walking':0, 'cycling':0, 'running':0, 'transport':0}
 
         # get labels and data for the pie
         for key in distances:
-            #print(key)
             for segments in summary:
                 for element in segments['summary']:
                     if element['activity'] == key:
-                        #print(element)
                         distances[key] += element['distance']
 
         labels = [key for key, value in distances.items() if value > 0]
@@ -423,14 +423,14 @@ class UserActivityMplPieView(LoginRequiredMixin, View):
             if key[1] > 0:
                 col = color_list[utils_service.get_activity_color(key[0])]
                 legend_activity = str(key[0]) + ": " + str(round(key[1]/(whole/100),2)) + "% "
-                plt.text(.20, y, legend_activity, ha='right', rotation=0, wrap=False, color=col)
+                plt.text(.20, y, legend_activity, ha='right', rotation=0, wrap=True, color=col)
             y+=0.16
 
         # set pie config
         plt.pie(sizes, labels=None, autopct=None, shadow=True, startangle=90, colors=cols, center=(-0.8,0.05))
 
         # misc settings
-        plt.subplots_adjust(top=0.3, bottom=0.15)
+        plt.subplots_adjust(top=0.3, bottom=0.25)
         plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
         plt.tight_layout()
         #plt.legend()
