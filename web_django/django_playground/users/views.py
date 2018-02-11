@@ -6,6 +6,8 @@ from django.views.generic import DetailView, ListView, RedirectView, UpdateView
 from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 
+from django.views.decorators.cache import never_cache
+
 from .models import User
 from ..services import moves_service
 from ..services import utils_service
@@ -214,8 +216,8 @@ class UserActivityGeoJsonView(LoginRequiredMixin, View):
         filename = "moves-%s.geojson" % date
         return HttpResponse(json.dumps(geojson),  content_type='application/geo+json')
 
-
 class UserActivityMplView(LoginRequiredMixin, View):
+    @never_cache
     def get(self, request, date=None, *args, **kwargs):
         """returns a matplot activity image"""
 
@@ -291,9 +293,9 @@ class UserActivityMplView(LoginRequiredMixin, View):
         canvas.print_figure(response, format='svg')
         # and return it
         return response
-
 class UserActivityMplDetailView(LoginRequiredMixin, View):
     """returns a matplot activity-detail image"""
+    @never_cache
     def get(self, request, date, index, *args, **kwargs):
         user = User.objects.get(username=request.user.username)
         api_date = date.replace('-', '')
@@ -364,8 +366,9 @@ class UserActivityMplDetailView(LoginRequiredMixin, View):
 
 
 class UserActivityMplPieView(LoginRequiredMixin, View):
-    """returns a matplot pie chart image"""
 
+    """returns a matplot pie chart image"""
+    @never_cache
     def get(self, request, days_to_pie=10, *args, **kwargs):
         # init figure & canvas
         fig = plt.figure(figsize=(3,4))
