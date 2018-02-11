@@ -1,6 +1,6 @@
 from django import template
 from django.contrib.gis.measure import Distance
-import datetime
+from datetime import datetime, timedelta
 
 register = template.Library()
 
@@ -29,7 +29,7 @@ def format_miles(value, unit):
 
 @register.filter(name='format_seconds')
 def format_seconds(value):
-    return '{}'.format(datetime.timedelta(seconds=value))
+    return '{}'.format(timedelta(seconds=value))
 
 
 @register.filter(name='format_pizza')
@@ -43,6 +43,11 @@ def calories_to_kj(calories):
     return '{:.0f} kJ'.format(int(calories)*4.184)
 
 
-@register.filter(name='calories_to_watts')
-def calories_to_watts(calories, duration):
-    return '{:.0f} Watts'.format(int(calories)*4184/duration)
+@register.filter(name='calories_to_watthour')
+def calories_to_watthour(calories):
+    return '{:.0f} Wh'.format(int(calories)*1.163)
+
+
+@register.filter(name='datestring_to_date')
+def datestring_to_date(date_string):
+    return datetime.strptime(date_string, '%Y%m%dT%H%M%S%z')

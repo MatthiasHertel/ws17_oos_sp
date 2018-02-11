@@ -140,32 +140,35 @@ class UtilsService:
 
     def geojson_move(self, segment):
         features = []
-        lookup = {'walking': 'Walking', 'transport': 'Transport', 'run': 'Running', 'cycling': 'Cycling'}
-        stroke = {'walking': '#00d45a', 'transport': '#000000', 'run': '#93139a', 'cycling': '#00ceef'}
-        # print ("\n\n\n\n\n\n\n\n\n\n\{}".format(segment))
         for activity in segment['activities']:
-            trackpoints = activity['trackPoints']
-            coordinates = [[point['lon'], point['lat']] for point in trackpoints]
-            timestamps = [point['time'] for point in trackpoints]
-            geojson = {'type': 'Feature', 'geometry': {}, 'properties': {}}
-            geojson['geometry'] = {'type': 'LineString', 'coordinates': coordinates}
-            for key in activity.keys():
-                if key != 'trackPoints':
-                    geojson['properties'][key] = activity[key]
-
-            # add a description & the saved timestamps
-            geojson['properties']['description'] = self.make_summary(activity, lookup)
-            geojson['properties']['times'] = timestamps
-
-            # add styling
-            geojson['properties']['stroke'] = stroke[activity['activity']]
-            geojson['properties']['stroke-width'] = 3
-            if activity['activity'] == 'trp':
-                geojson['properties']['stroke-opacity'] = 0.1
-
+            geojson = self.geojson_activity(activity)
             features.append(geojson)
 
         return features
+
+    def geojson_activity(self, activity):
+        lookup = {'walking': 'Walking', 'transport': 'Transport', 'run': 'Running', 'cycling': 'Cycling'}
+        stroke = {'walking': '#00d45a', 'transport': '#000000', 'run': '#93139a', 'cycling': '#00ceef'}
+        trackpoints = activity['trackPoints']
+        coordinates = [[point['lon'], point['lat']] for point in trackpoints]
+        timestamps = [point['time'] for point in trackpoints]
+        geojson = {'type': 'Feature', 'geometry': {}, 'properties': {}}
+        geojson['geometry'] = {'type': 'LineString', 'coordinates': coordinates}
+        for key in activity.keys():
+            if key != 'trackPoints':
+                geojson['properties'][key] = activity[key]
+
+        # add a description & the saved timestamps
+        geojson['properties']['description'] = self.make_summary(activity, lookup)
+        geojson['properties']['times'] = timestamps
+
+        # add styling
+        geojson['properties']['stroke'] = stroke[activity['activity']]
+        geojson['properties']['stroke-width'] = 3
+        if activity['activity'] == 'trp':
+            geojson['properties']['stroke-opacity'] = 0.1
+
+        return geojson
 
     def get_activity_color(self, activity):
         if activity == 'transport':

@@ -1,12 +1,25 @@
 {% extends "base.html" %}
 {% load unit_conversion %}
 {% load humanize %}
-{% block head %}
 
+{% block head %}
+  <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' />
+
+  <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+  <script src='//api.tiles.mapbox.com/mapbox.js/v1.6.0/mapbox.js'></script>
+  <script src='/static/leaflet-hash.js'></script>
+
+  <link href='//api.tiles.mapbox.com/mapbox.js/v1.6.0/mapbox.css' rel='stylesheet' />
+
+  <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+  <link href="geojson" rel="geojson" type="application/json">
 {% endblock %}
 
 {% block style %}
-
+  /*#map { position:absolute; top:60; bottom:0; width:100%; height:100%;}*/
+  #map {
+  height: 350px;
+  }
 {% endblock %}
 
 {% block content %}
@@ -14,7 +27,7 @@
 <div class="container">
   <div class="row">
     <div class="col-md-6">
-      <h3>{{activity.group}} <small>{{ activity.startTime }}</small></h3>
+      <h3>{{activity.group}}<br><small>{{ activity.startTime|datestring_to_date }}</small></h3>
     </div>
     <div class="col-md-6">
       <div class="row">
@@ -26,13 +39,13 @@
       <div class="row">
         {% if activity.calories %}
         <div class="col-md-3">
-          <h5>{{ activity.calories|calories_to_watts:activity.duration }}</h5>
-        </div>
-        <div class="col-md-3">
           <h5>{{ activity.calories }} kcal</h5>
         </div>
         <div class="col-md-3">
           <h5>{{ activity.calories|calories_to_kj }}</h5>
+        </div>
+        <div class="col-md-3">
+          <h5>{{ activity.calories|calories_to_watthour }}</h5>
         </div>
         {% endif %}
       </div>
@@ -51,7 +64,7 @@
         <div class="card-header">
           <strong>Route</strong>
         </div>
-        <img class="card-img-top" src="mpl_detail_map.png">
+        <div id='map'></div>
       </div>
     </div>
   </div>
@@ -99,4 +112,24 @@
   <div>
     <a class="btn btn-secondary" href="/users/map/{{ date }}" role="button" style="margin: 1em 0 1em 0"><< Map overview</a>
   </div>
+
+  <script>
+    var map = L.mapbox.map('map', 'paulmison.gofl3m15')
+      .setView([0, 0], 2);
+    var hash = new L.Hash(map);
+    map.zoomControl.setPosition('topright');
+    var draw_geojson = function(data) {
+      var markerLayer = L.mapbox.markerLayer()
+      markerLayer.on('layeradd', function(e) {
+        var marker = e.layer,
+          feature = marker.feature;
+        if (feature.properties.icon) {
+          marker.setIcon(L.icon(feature.properties.icon));
+        }
+      });
+      markerLayer.setGeoJSON(data).addTo(map);
+      map.fitBounds(markerLayer.getBounds());
+    };
+    $.getJSON($('link[rel="geojson"]').attr("href"), draw_geojson);
+  </script>
 {% endblock content %}

@@ -58,8 +58,8 @@ urlpatterns = [
         view=views.UserActivityMplDetailView.as_view(), name='mpl_detail'
     ),
     url(
-        regex=r'^detail/(?P<date>\d{4}-\d{2}-\d{2})/(?P<index>\d+)/mpl_detail_map.png$',
-        view=views.UserActivityDetailMapView.as_view(), name='mpl_detail_map'
+        regex=r'^detail/(?P<date>\d{4}-\d{2}-\d{2})/(?P<index>\d+)/geojson$',
+        view=views.UserActivityDetailMapView.as_view(), name='detail_map_geojson'
     ),
     url(regex=r'^map/(?P<date>\d{4}-\d{2}-\d{2})/$', view=views.UserActivityMapView.as_view(), name='map'),
     url(regex=r'^geojson/(?P<date>\d{4}-\d{2}-\d{2})/$', view=views.UserActivityGeoJsonView.as_view(), name='geojson'),

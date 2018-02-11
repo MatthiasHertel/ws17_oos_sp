@@ -218,6 +218,7 @@ class UserActivityGeoJsonView(LoginRequiredMixin, View):
         filename = "moves-%s.geojson" % date
         return HttpResponse(json.dumps(geojson),  content_type='application/geo+json')
 
+
 class UserActivityMplView(LoginRequiredMixin, View):
     @never_cache
     def get(self, request, date=None, *args, **kwargs):
@@ -446,25 +447,14 @@ class UserActivityMplPieView(LoginRequiredMixin, View):
 
 
 class UserActivityDetailMapView(LoginRequiredMixin, View):
-    """returns a matplot activity-detail image"""
     @never_cache
     def get(self, request, date, index, *args, **kwargs):
         user = User.objects.get(username=request.user.username)
         api_date = date.replace('-', '')
+        utils_service.validate_date(api_date)
         activity = moves_service.get_activity_date(user, utils_service.make_date_from(api_date), int(index))
-        bounds = [13.373778,52.499863,13.4762,52.535617]
-
-        maxY = bounds[3]
-        maxX = bounds[2]
-        minY = bounds[1]
-        minX = bounds[0]
-        map = smopy.Map((minY, minX, maxY, maxX), z=15)
-        ax = map.show_mpl(figsize=(20, 10))
-        for track_point in activity['trackPoints']:
-            X, Y = map.to_pixels(track_point['lat'], track_point['lon'])
-            ax.plot(X, Y, 'or', ms=2, mew=2)
-        canvas = FigureCanvas(ax.get_figure())
-
-        response = HttpResponse(content_type='image/png')
-        canvas.print_figure(response, format='png')
-        return response
+        features = []
+        geojson = utils_service.geojson_activity(activity)
+        features.append(geojson)
+        geojson = {'type': 'FeatureCollection', 'features': features}
+        return HttpResponse(json.dumps(geojson),  content_type='application/geo+json')
