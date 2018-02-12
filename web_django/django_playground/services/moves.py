@@ -200,6 +200,35 @@ class MovesService:
             response.append(summary[activity_name])
         return response
 
+    def calculate_totals(self, moves_profile, activities):
+        for activity in activities:
+            if 'totals' not in moves_profile.data:
+                moves_profile.data['totals'] = dict(
+                    walking=dict(
+                        calories=0,
+                        distance=0,
+                        duration=0,
+                        steps=0
+                    ),
+                    cycling=dict(
+                        calories=0,
+                        distance=0,
+                        duration=0,
+                    ),
+                    transport=dict(
+                        distance=0,
+                        duration=0,
+                    )
+                )
+            moves_profile.data['totals'][activity['activity']]['distance'] += int(activity['distance'])
+            moves_profile.data['totals'][activity['activity']]['duration'] += int(activity['duration'])
+
+            if activity['activity'] == 'walking' or activity['activity'] == 'cycling':
+                moves_profile.data['totals'][activity['activity']]['calories'] += int(activity['calories'])
+
+            if activity['activity'] == 'walking':
+                moves_profile.data['totals'][activity['activity']]['steps'] += int(activity['steps'])
+
     def get_activities_date(self, user, date):
         data = self.get_storyline_date(user, date)
         activities = []
@@ -264,35 +293,8 @@ class MovesService:
                                 type=segment['type'],
                                 data=segment
                             )
-
                             if segment['type'] == 'move':
-                                for activity in segment['activities']:
-                                    if 'totals' not in moves_profile.data:
-                                        moves_profile.data['totals'] = dict(
-                                            walking=dict(
-                                                calories=0,
-                                                distance=0,
-                                                duration=0,
-                                                steps=0
-                                            ),
-                                            cycling=dict(
-                                                calories=0,
-                                                distance=0,
-                                                duration=0,
-                                            ),
-                                            transport=dict(
-                                                distance=0,
-                                                duration=0,
-                                            )
-                                        )
-                                    moves_profile.data['totals'][activity['activity']]['distance'] += int(activity['distance'])
-                                    moves_profile.data['totals'][activity['activity']]['duration'] += int(activity['duration'])
-
-                                    if activity['activity'] == 'walking' or activity['activity'] == 'cycling':
-                                        moves_profile.data['totals'][activity['activity']]['calories'] += int(activity['calories'])
-
-                                    if activity['activity'] == 'walking':
-                                        moves_profile.data['totals'][activity['activity']]['steps'] += int(activity['steps'])
+                                self.calculate_totals(moves_profile, segment['activities'])
 
             moves_profile.save()
         except Exception as e:
@@ -300,7 +302,6 @@ class MovesService:
                 print('Import ERROR {}'.format(e.message))
             else:
                 print(e)
-
 
     def get_profile(self, moves_profile):
         url = '{}/user/profile'.format(self.config['api'])
