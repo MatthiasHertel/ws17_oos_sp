@@ -171,13 +171,13 @@ class UtilsService:
         return geojson
 
     def get_activity_color(self, activity):
-        if activity == 'transport':
-            return 17
-        if activity == 'walking':
-            return 5
-        if activity == 'cycling':
-            return 2
-        if activity == 'running':
-            return 3
+        if activity == 'transport': #444 ?
+            return '#444444'
+        if activity == 'walking': #00bc8c
+            return '#00bc8c'
+        if activity == 'cycling': #3498DB
+            return '#3498DB'
+        if activity == 'running': #ff7f0e
+            return '#ff7f0e'
         else:
             return None

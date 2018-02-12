@@ -229,7 +229,7 @@ class UserActivityMplView(LoginRequiredMixin, View):
 
         # color map for coloring diagram-stuff
         # ref: https://matplotlib.org/examples/color/colormaps_reference.html
-        color_list = plt.cm.tab10(np.linspace(0, 1, 24))
+        #color_list = plt.cm.tab10(np.linspace(0, 1, 24))
 
         user = User.objects.get(username=request.user.username)
         if date is not None:
@@ -265,7 +265,7 @@ class UserActivityMplView(LoginRequiredMixin, View):
 
             # do the plotting
             if np.sum(y) > 0:
-                plt.plot(x, y, 'o-', color=color_list[utils_service.get_activity_color(activity)], label=activity)
+                plt.plot(x, y, 'o-', color=utils_service.get_activity_color(activity), label=activity)
 
 
         # set plot title
@@ -312,7 +312,7 @@ class UserActivityMplDetailView(LoginRequiredMixin, View):
 
         # color map for coloring diagram-stuff
         # ref: https://matplotlib.org/examples/color/colormaps_reference.html
-        color_list = plt.cm.tab10(np.linspace(0, 1, 24))
+        # color_list = plt.cm.tab10(np.linspace(0, 1, 24))
 
         # define what is needed
         speedist = {}
@@ -363,7 +363,7 @@ class UserActivityMplDetailView(LoginRequiredMixin, View):
 
         # create plot or name the shame (no sufficient data)
         if len(x)>0 and len(y)>0:
-            plt.plot(x, y, '.-', color=color_list[utils_service.get_activity_color(currActivity)])
+            plt.plot(x, y, '.-', color=utils_service.get_activity_color(currActivity))
         else:
             fig.text(.25, .5, 'Oops, not enough data for generating a plot :( ', style='normal',
                     bbox={'facecolor': 'red', 'alpha': 0.5, 'pad': 10})
@@ -387,7 +387,7 @@ class UserActivityMplPieView(LoginRequiredMixin, View):
 
         # color map for coloring diagram-stuff
         # ref: https://matplotlib.org/examples/color/colormaps_reference.html
-        color_list = plt.cm.tab10(np.linspace(0, 1, 24))
+        #color_list = plt.cm.tab10(np.linspace(0, 1, 24))
 
         user = User.objects.get(username=request.user.username)
 
@@ -411,7 +411,7 @@ class UserActivityMplPieView(LoginRequiredMixin, View):
 
         # color map for coloring diagram-stuff
         # ref: https://matplotlib.org/examples/color/colormaps_reference.html
-        color_list = plt.cm.tab10(np.linspace(0, 1, 24))
+        #color_list = plt.cm.tab10(np.linspace(0, 1, 24))
 
         # init figure & canvas
         plt.close()
@@ -420,7 +420,7 @@ class UserActivityMplPieView(LoginRequiredMixin, View):
         canvas = FigureCanvas(fig)
 
         # get the colors (wtf ...)
-        cols = [color_list[utils_service.get_activity_color(label)] for label in labels]
+        cols = [utils_service.get_activity_color(label) for label in labels]
 
         # draw the legend by hand, because display looks shitty for small values (even more wtf ...)
         y = -1.5
@@ -428,7 +428,7 @@ class UserActivityMplPieView(LoginRequiredMixin, View):
 
         for key in distances.items():
             if key[1] > 0:
-                col = color_list[utils_service.get_activity_color(key[0])]
+                col = utils_service.get_activity_color(key[0])
                 legend_activity = str(key[0]) + ": " + str(round(key[1]/(whole/100),2)) + "%"
                 plt.text(0.2, y, legend_activity, va='top', ha='right', rotation=0, wrap=True, color=col)
             y+=0.13

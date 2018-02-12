@@ -116,6 +116,34 @@ border-radius: 21px 21px 21px 21px;
  * Extra utilities
  */
 
+h2 {
+  margin-top: .5em
+}
+
+.col-sm-12 {
+  margin-bottom: .25em
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #00bc8c;
+    border-color: #00bc8c;
+    margin-bottom: .5em;
+}
+
+.btn-primary:hover {
+  color: #fff;
+  background-color: #007053;
+  border-color: #007053;
+}
+
+.btn-primary:not(:disabled):not(.disabled):active {
+  color: #fff;
+  background-color: #00efb2;
+  border-color: #00efb2;
+
+}
+
 .border-top { border-top: 1px solid #e5e5e5; }
 .border-bottom { border-bottom: 1px solid #e5e5e5; }
 
@@ -131,6 +159,25 @@ border-radius: 21px 21px 21px 21px;
     -ms-flex: 1;
     -webkit-box-flex: 1;
     flex: 1;
+  }
+
+  .mpl-pie {
+    position: relative;
+    top: -10px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .mpl-pie {
+    position: relative;
+    top: -15px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .mpl-pie {
+    position: relative;
+    top: -30px;
   }
 }
 

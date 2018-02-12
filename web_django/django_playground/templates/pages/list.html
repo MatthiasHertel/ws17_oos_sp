@@ -15,7 +15,7 @@
       <div class="card">
         <div class="card-header">
           <strong>
-            Informations from your Moves-Account
+            Information from your Moves-Account
           </strong>
         </div>
         <div class="card-block" style="padding:10px">
@@ -23,11 +23,11 @@
             <p>Hi <strong>{{user.username}}</strong>. <br>
               You've been using Moves for <strong>{{ days }} days</strong>. <br>
               Your Timezone is: <strong> {{profile.profile.currentTimeZone.id }}</strong> <br>
-              Your Tracking Device OS is: <strong> {{profile.profile.platform | upper}}</strong> <br><br>
-              Distance covered (Walking | Cycling | Transport)<br> <strong> {{profile.totals.walking.distance|format_meters:"km"}} | {{profile.totals.cycling.distance|format_meters:"km"}} | {{profile.totals.transport.distance|format_meters:"km"}}</strong><br>
-              Time Spent (Walking | Cycling | Transport)<br> <strong> {{profile.totals.walking.duration|format_seconds}} | {{profile.totals.cycling.duration|format_seconds}} | {{profile.totals.transport.duration|format_seconds}}</strong><br>
-              Calories Burned<br> <strong> Walking: {{profile.totals.walking.calories|format_pizza}}<br>Cycling: {{profile.totals.cycling.calories|format_pizza}}</strong><br>
-              Steps (Walking)<br><strong> {{profile.totals.walking.steps|intword}}</strong>
+              Your Tracking Device OS is: <strong> {{profile.profile.platform | upper}}</strong></p>
+            <p><strong>Distance covered (Walking | Cycling | Transport):<br /></strong> {{profile.totals.walking.distance|format_meters:"km"}} | {{profile.totals.cycling.distance|format_meters:"km"}} | {{profile.totals.transport.distance|format_meters:"km"}}<br></p>
+            <p><strong>Time Spent (Walking | Cycling | Transport):<br /></strong> {{profile.totals.walking.duration|format_seconds}} | {{profile.totals.cycling.duration|format_seconds}} | {{profile.totals.transport.duration|format_seconds}}</p>
+            <p><strong>Calories Burned:<br></strong> Walking: {{profile.totals.walking.calories|format_pizza}}<br>Cycling: {{profile.totals.cycling.calories|format_pizza}}</p>
+            <p><strong>Steps (Walking):<br></strong> {{profile.totals.walking.steps|intword}}</p>
             </p>
           </div>
         </div>
@@ -60,7 +60,7 @@
               <thead>
                   <tr>
                       <th>Date</th>
-                      <th>Short Summarize</th>
+                      <th>Short Summary</th>
                       <th>GeoJSON</th>
                   </tr>
               </thead>
@@ -93,7 +93,7 @@
       <div class="card">
         <div class="card-header">
           <strong>
-            Matplot-Diagram: Last 30 Days (mpl_recent.svg)
+            Matplot-Diagram: Last 30 days (mpl_recent.svg)
           </strong>
         </div>
         <div class="card-block" style="padding:10px">
